@@ -22,7 +22,10 @@ func HandleConnection(connection net.Conn) {
 			continue
 		}
 
-		commandArgs := protocol.ParseArray(reader)
+		commandArgs, err := protocol.ParseArray(reader)
+		if err != nil {
+			fmt.Println("Failed to parse the incoming redis command:", err.Error())
+		}
 
 		fmt.Println("command args", commandArgs)
 
