@@ -16,6 +16,11 @@ func HandleConnection(connection net.Conn) {
 		Handle: bufio.NewReader(connection),
 	}
 
+	respProtocol := &protocol.RESPProtocol{
+		Connection: connection,
+		Reader:     reader,
+	}
+
 	for {
 		dataType := protocol.GetDataType(reader)
 		if dataType != protocol.ArrayType {
@@ -29,7 +34,6 @@ func HandleConnection(connection net.Conn) {
 
 		fmt.Println("command args", commandArgs)
 
-		response := []byte("+OK\r\n")
-		connection.Write(response)
+		respProtocol.WriteSimpleString("OK")
 	}
 }

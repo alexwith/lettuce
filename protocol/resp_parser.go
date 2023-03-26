@@ -8,16 +8,6 @@ import (
 	"github.com/alexwith/lettuce/buffer"
 )
 
-type DataType byte
-
-const (
-	SimpleStringType DataType = '+'
-	ErrorType        DataType = '-'
-	IntegerType      DataType = ':'
-	BulkStringType   DataType = '$'
-	ArrayType        DataType = '*'
-)
-
 func GetDataType(reader *buffer.BufferReader) DataType {
 	dataType, err := reader.Handle.ReadByte()
 	if err != nil {
