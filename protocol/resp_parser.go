@@ -3,6 +3,7 @@ package protocol
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/alexwith/lettuce/buffer"
 )
@@ -30,11 +31,9 @@ func ParseDataType(reader *buffer.BufferReader) (interface{}, error) {
 	dataType := GetDataType(reader)
 	switch dataType {
 	case SimpleStringType:
-		return "", nil
-	case ErrorType:
-		return "", nil
+		return ParseSimpleString(reader), nil
 	case IntegerType:
-		return 10, nil
+		return ParseInteger(reader)
 	case BulkStringType:
 		return ParseBulkString(reader)
 	case ArrayType:
@@ -58,6 +57,14 @@ func ParseArray(reader *buffer.BufferReader) ([]interface{}, error) {
 	}
 
 	return array, nil
+}
+
+func ParseSimpleString(reader *buffer.BufferReader) string {
+	return reader.ReadLine()
+}
+
+func ParseInteger(reader *buffer.BufferReader) (int, error) {
+	return strconv.Atoi(reader.ReadLine())
 }
 
 func ParseBulkString(reader *buffer.BufferReader) (string, error) {

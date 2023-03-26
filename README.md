@@ -6,9 +6,9 @@ It is worth noting that this is just a fun project for learning purposes, but I 
 
 ## Features
 ### RESP (REdis Serialization Protocol)
-- [ ] Simple Strings
+- [x] Simple Strings
 - [ ] Errors
-- [ ] Integers
+- [x] Integers
 - [x] Bulk Strings
 - [x] Arrays
 - [ ] Null elements in Arrays
