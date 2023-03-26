@@ -6,6 +6,7 @@ import (
 	"net"
 
 	"github.com/alexwith/lettuce/buffer"
+	"github.com/alexwith/lettuce/command"
 	"github.com/alexwith/lettuce/protocol"
 )
 
@@ -32,8 +33,14 @@ func HandleConnection(connection net.Conn) {
 			fmt.Println("Failed to parse the incoming redis command:", err.Error())
 		}
 
-		fmt.Println("command args", commandArgs)
+		redisCommand := fmt.Sprint(commandArgs[0])
 
-		respProtocol.WriteSimpleString("OK")
+		commandHandler := command.GetCommand(redisCommand)
+		if commandHandler == nil {
+			respProtocol.WriteSimpleString("HELLO")
+			continue
+		}
+
+		commandHandler.(func([]interface{}, *protocol.RESPProtocol))(commandArgs, respProtocol)
 	}
 }
