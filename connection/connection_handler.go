@@ -41,6 +41,6 @@ func HandleConnection(connection net.Conn) {
 			continue
 		}
 
-		commandHandler.(func([]interface{}, *protocol.RESPProtocol))(commandArgs, respProtocol)
+		commandHandler.(func([]interface{}, *protocol.RESPProtocol))(commandArgs[1:], respProtocol)
 	}
 }

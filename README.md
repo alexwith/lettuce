@@ -16,7 +16,7 @@ It is worth noting that this is just a fun project for learning purposes, but I 
 
 ### Commands
 I will only be implementing the most important commands, as I will not have time to implement the 450+ redis commands that exist. 
-- [ ] PING 
+- [X] PING 
 - [ ] KEYS 
 - [ ] SET
 - [ ] GET
