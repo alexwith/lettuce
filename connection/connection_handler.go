@@ -36,7 +36,7 @@ func HandleConnection(connection net.Conn) {
 			fmt.Println("Failed to parse the incoming redis command:", err.Error())
 		}
 
-		redisCommand := fmt.Sprint(commandArgs[0])
+		redisCommand := string(commandArgs[0])
 
 		commandHandler := command.GetCommand(redisCommand)
 		if commandHandler == nil {
@@ -44,6 +44,9 @@ func HandleConnection(connection net.Conn) {
 			continue
 		}
 
-		commandHandler.(func([]interface{}, *protocol.RESPProtocol))(commandArgs[1:], respProtocol)
+		commandContext := &command.CommandContext{
+			Args: commandArgs[1:],
+		}
+		commandHandler.(func(*protocol.RESPProtocol, *command.CommandContext))(respProtocol, commandContext)
 	}
 }

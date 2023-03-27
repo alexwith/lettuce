@@ -11,30 +11,30 @@ func (protocol *RESPProtocol) GetDataType() (DataType, error) {
 	return DataType(dataType), err
 }
 
-func (protocol *RESPProtocol) ParseDataType() (interface{}, error) {
+func (protocol *RESPProtocol) ParseDataType() ([]byte, error) {
 	dataType, err := protocol.GetDataType()
 	if err != nil {
-		return dataType, err
+		return []byte{byte(dataType)}, err
 	}
 
 	switch dataType {
 	case SimpleStringType:
-		return protocol.ParseSimpleString(), nil
+		return []byte(protocol.ParseSimpleString()), nil
 	case IntegerType:
-		return protocol.ParseInteger()
+		value, err := protocol.ParseInteger()
+		return []byte(strconv.Itoa(value)), err
 	case BulkStringType:
-		return protocol.ParseBulkString()
-	case ArrayType:
-		return protocol.ParseArray()
+		value, err := protocol.ParseBulkString()
+		return []byte(value), err
 	default:
 		return nil, errors.New("Failed to parse the data type")
 	}
 }
 
-func (protocol *RESPProtocol) ParseArray() ([]interface{}, error) {
+func (protocol *RESPProtocol) ParseArray() ([][]byte, error) {
 	size := protocol.Reader.ReadInt()
 
-	var array []interface{}
+	var array [][]byte
 	for i := 0; i < size; i++ {
 		dataType, err := protocol.ParseDataType()
 		if err != nil {

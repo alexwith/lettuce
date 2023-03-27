@@ -10,6 +10,5 @@ const PORT int16 = 6380
 
 func main() {
 	command.RegisterCommands()
-
 	connection.Listen(HOST, PORT)
 }
