@@ -2,43 +2,41 @@ package protocol
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
-
-	"github.com/alexwith/lettuce/buffer"
 )
 
-func GetDataType(reader *buffer.BufferReader) DataType {
-	dataType, err := reader.Handle.ReadByte()
-	if err != nil {
-		fmt.Println("Failed to get data type:", err.Error())
-	}
+func (protocol *RESPProtocol) GetDataType() (DataType, error) {
+	dataType, err := protocol.Reader.Handle.ReadByte()
 
-	return DataType(dataType)
+	return DataType(dataType), err
 }
 
-func ParseDataType(reader *buffer.BufferReader) (interface{}, error) {
-	dataType := GetDataType(reader)
+func (protocol *RESPProtocol) ParseDataType() (interface{}, error) {
+	dataType, err := protocol.GetDataType()
+	if err != nil {
+		return dataType, err
+	}
+
 	switch dataType {
 	case SimpleStringType:
-		return ParseSimpleString(reader), nil
+		return protocol.ParseSimpleString(), nil
 	case IntegerType:
-		return ParseInteger(reader)
+		return protocol.ParseInteger()
 	case BulkStringType:
-		return ParseBulkString(reader)
+		return protocol.ParseBulkString()
 	case ArrayType:
-		return ParseArray(reader)
+		return protocol.ParseArray()
 	default:
 		return nil, errors.New("Failed to parse the data type")
 	}
 }
 
-func ParseArray(reader *buffer.BufferReader) ([]interface{}, error) {
-	size := reader.ReadInt()
+func (protocol *RESPProtocol) ParseArray() ([]interface{}, error) {
+	size := protocol.Reader.ReadInt()
 
 	var array []interface{}
 	for i := 0; i < size; i++ {
-		dataType, err := ParseDataType(reader)
+		dataType, err := protocol.ParseDataType()
 		if err != nil {
 			return array, err
 		}
@@ -49,16 +47,16 @@ func ParseArray(reader *buffer.BufferReader) ([]interface{}, error) {
 	return array, nil
 }
 
-func ParseSimpleString(reader *buffer.BufferReader) string {
-	return reader.ReadLine()
+func (protocol *RESPProtocol) ParseSimpleString() string {
+	return protocol.Reader.ReadLine()
 }
 
-func ParseInteger(reader *buffer.BufferReader) (int, error) {
-	return strconv.Atoi(reader.ReadLine())
+func (protocol *RESPProtocol) ParseInteger() (int, error) {
+	return strconv.Atoi(protocol.Reader.ReadLine())
 }
 
-func ParseBulkString(reader *buffer.BufferReader) (string, error) {
-	length := reader.ReadInt()
+func (protocol *RESPProtocol) ParseBulkString() (string, error) {
+	length := protocol.Reader.ReadInt()
 
 	if length > 512*1024*1024 {
 		return "", errors.New("A Bulk String cannot be longer than 512MB")
@@ -66,12 +64,12 @@ func ParseBulkString(reader *buffer.BufferReader) (string, error) {
 
 	var bulkString []byte
 	for i := 0; i < length; i++ {
-		value, _ := reader.Handle.ReadByte()
+		value, _ := protocol.Reader.Handle.ReadByte()
 		bulkString = append(bulkString, value)
 	}
 
 	for i := 0; i < 2; i++ {
-		reader.Handle.ReadByte()
+		protocol.Reader.Handle.ReadByte()
 	}
 
 	return string(bulkString), nil

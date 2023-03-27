@@ -3,6 +3,7 @@ package connection
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"net"
 
 	"github.com/alexwith/lettuce/buffer"
@@ -13,22 +14,24 @@ import (
 func HandleConnection(connection net.Conn) {
 	defer connection.Close()
 
-	reader := &buffer.BufferReader{
-		Handle: bufio.NewReader(connection),
-	}
-
 	respProtocol := &protocol.RESPProtocol{
 		Connection: connection,
-		Reader:     reader,
+		Reader: &buffer.BufferReader{
+			Handle: bufio.NewReader(connection),
+		},
 	}
 
 	for {
-		dataType := protocol.GetDataType(reader)
+		dataType, err := respProtocol.GetDataType()
+		if err != nil && err == io.EOF {
+			break
+		}
+
 		if dataType != protocol.ArrayType {
 			continue
 		}
 
-		commandArgs, err := protocol.ParseArray(reader)
+		commandArgs, err := respProtocol.ParseArray()
 		if err != nil {
 			fmt.Println("Failed to parse the incoming redis command:", err.Error())
 		}
