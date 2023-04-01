@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strings"
 
 	"github.com/alexwith/lettuce/buffer"
 	"github.com/alexwith/lettuce/command"
@@ -37,15 +38,23 @@ func HandleConnection(connection net.Conn) {
 		}
 
 		redisCommand := string(commandArgs[0])
+		redisCommandArgs := commandArgs[1:]
 
 		commandHandler := command.GetCommand(redisCommand)
 		if commandHandler == nil {
-			respProtocol.WriteSimpleString("HELLO")
+			var unknownCommandArgs []string
+			for i := 0; i < len(redisCommandArgs); i++ {
+				unknownCommandArg := fmt.Sprintf("'%s'", string(redisCommandArgs[i]))
+				unknownCommandArgs = append(unknownCommandArgs, unknownCommandArg)
+			}
+
+			error := fmt.Sprintf("ERR unknown command '%s', with args beginning with: %s", redisCommand, strings.Join(unknownCommandArgs, " "))
+			respProtocol.WriteError(error)
 			continue
 		}
 
 		commandContext := &command.CommandContext{
-			Args: commandArgs[1:],
+			Args: redisCommandArgs,
 		}
 		commandHandler.(func(*protocol.RESPProtocol, *command.CommandContext))(respProtocol, commandContext)
 	}
