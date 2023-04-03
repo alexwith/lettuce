@@ -1,6 +1,8 @@
 package command
 
 import (
+	"fmt"
+
 	"github.com/alexwith/lettuce/protocol"
 )
 
@@ -20,11 +22,16 @@ func RegisterCommand(command string, handler func(protocol *protocol.RESPProtoco
 
 func RegisterCommands() {
 	RegisterCommand("PING", func(protocol *protocol.RESPProtocol, context *CommandContext) {
-		response := "PONG"
-		if len(context.Args) > 0 {
-			response = string(context.Args[0])
+		if len(context.Args) <= 0 {
+			protocol.WriteSimpleString("PONG")
+			return
 		}
 
-		protocol.WriteSimpleString(response)
+		response := string(context.Args[0])
+		fmt.Println(response)
+
+		yes := []int{1, 2, 3, 4, 5}
+		protocol.WriteArray(yes)
+		//protocol.WriteBulkString(response)
 	})
 }

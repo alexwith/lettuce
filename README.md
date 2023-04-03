@@ -7,7 +7,7 @@ It is worth noting that this is just a fun project for learning purposes, but I 
 ## Features
 ### RESP (REdis Serialization Protocol)
 - [x] Simple Strings
-- [ ] Errors
+- [x] Errors
 - [x] Integers
 - [x] Bulk Strings
 - [x] Arrays

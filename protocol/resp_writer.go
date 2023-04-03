@@ -1,15 +1,25 @@
 package protocol
 
-import (
-	"fmt"
-)
-
 func (protocol *RESPProtocol) WriteSimpleString(value string) {
-	simpleString := fmt.Sprintf("%s%s\r\n", string(SimpleStringType), value)
-	protocol.Connection.Write([]byte(simpleString))
+	protocol.WriteRawString(protocol.CreateSimpleString(value))
 }
 
 func (protocol *RESPProtocol) WriteError(value string) {
-	error := fmt.Sprintf("%s%s\r\n", string(ErrorType), value)
-	protocol.Connection.Write([]byte(error))
+	protocol.WriteRawString(protocol.CreateError(value))
+}
+
+func (protocol *RESPProtocol) WriteInteger(value int) {
+	protocol.WriteRawString(protocol.CreateInteger(value))
+}
+
+func (protocol *RESPProtocol) WriteBulkString(value string) {
+	protocol.WriteRawString(protocol.CreateBulkString(value))
+}
+
+func (protocol *RESPProtocol) WriteArray(value interface{}) {
+	protocol.WriteRawString(protocol.CreateArray(value))
+}
+
+func (protocol *RESPProtocol) WriteRawString(value string) {
+	protocol.Connection.Write([]byte(value))
 }
