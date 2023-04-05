@@ -2,6 +2,7 @@ package command
 
 import (
 	"github.com/alexwith/lettuce/protocol"
+	"github.com/alexwith/lettuce/storage"
 )
 
 type CommandContext struct {
@@ -30,14 +31,26 @@ func RegisterCommands() {
 	})
 
 	RegisterCommand("SET", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+		key := string(context.Args[0])
+		value := context.Args[1]
+
+		storage.Set(key, value)
+
 		protocol.WriteSimpleString("OK")
 	})
 
 	RegisterCommand("GET", func(protocol *protocol.RESPProtocol, context *CommandContext) {
-		protocol.WriteSimpleString("OK")
+		key := string(context.Args[0])
+
+		value := storage.Get(key)
+
+		protocol.WriteBulkString(string(value))
 	})
 
 	RegisterCommand("INCR", func(protocol *protocol.RESPProtocol, context *CommandContext) {
-		protocol.WriteSimpleString("OK")
+		key := string(context.Args[0])
+		value := storage.Increment(key)
+
+		protocol.WriteInteger(value)
 	})
 }
