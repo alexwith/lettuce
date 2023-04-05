@@ -16,7 +16,7 @@ func (protocol *RESPProtocol) WriteBulkString(value string) {
 	protocol.WriteRawString(protocol.CreateBulkString(value))
 }
 
-func (protocol *RESPProtocol) WriteArray(value any) {
+func (protocol *RESPProtocol) WriteArray(value []any) {
 	protocol.WriteRawString(protocol.CreateArray(value))
 }
 

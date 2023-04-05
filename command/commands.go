@@ -1,8 +1,6 @@
 package command
 
 import (
-	"fmt"
-
 	"github.com/alexwith/lettuce/protocol"
 )
 
@@ -10,9 +8,9 @@ type CommandContext struct {
 	Args [][]byte
 }
 
-var commands map[string]interface{} = make(map[string]interface{})
+var commands map[string]any = make(map[string]any)
 
-func GetCommand(command string) interface{} {
+func GetCommand(command string) any {
 	return commands[command]
 }
 
@@ -28,10 +26,6 @@ func RegisterCommands() {
 		}
 
 		response := string(context.Args[0])
-		fmt.Println(response)
-
-		yes := []int{1, 2, 3, 4, 5}
-		protocol.WriteArray(yes)
-		//protocol.WriteBulkString(response)
+		protocol.WriteBulkString(response)
 	})
 }
