@@ -12,7 +12,8 @@ It is worth noting that this is just a fun project for learning purposes, but I 
 - [x] Bulk Strings
 - [x] Arrays
 - [ ] Null elements in Arrays
-- [ ] Pipelining
+- [x] Telnet commands
+- [x] Pipelining
 
 ### Commands
 I will only be implementing the most important commands, as I will not have time to implement the 450+ redis commands that exist. 
@@ -27,6 +28,7 @@ I will only be implementing the most important commands, as I will not have time
 - [ ] EXPIRE
 - [ ] EXISTS
 - [ ] STRLEN
+- [ ] INCR
 
 ## License
 Lettuce is free and open source software. The software is released under the terms of

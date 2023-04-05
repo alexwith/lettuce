@@ -6,7 +6,7 @@ import (
 )
 
 func (protocol *RESPProtocol) GetDataType() (DataType, error) {
-	dataType, err := protocol.Reader.Handle.ReadByte()
+	dataType, err := protocol.Reader.ReadByte()
 
 	return DataType(dataType), err
 }
@@ -64,12 +64,12 @@ func (protocol *RESPProtocol) ParseBulkString() (string, error) {
 
 	var bulkString []byte
 	for i := 0; i < length; i++ {
-		value, _ := protocol.Reader.Handle.ReadByte()
+		value, _ := protocol.Reader.ReadByte()
 		bulkString = append(bulkString, value)
 	}
 
 	for i := 0; i < 2; i++ {
-		protocol.Reader.Handle.ReadByte()
+		protocol.Reader.ReadByte()
 	}
 
 	return string(bulkString), nil

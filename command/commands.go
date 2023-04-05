@@ -28,4 +28,16 @@ func RegisterCommands() {
 		response := string(context.Args[0])
 		protocol.WriteBulkString(response)
 	})
+
+	RegisterCommand("SET", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+		protocol.WriteSimpleString("OK")
+	})
+
+	RegisterCommand("GET", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+		protocol.WriteSimpleString("OK")
+	})
+
+	RegisterCommand("INCR", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+		protocol.WriteSimpleString("OK")
+	})
 }

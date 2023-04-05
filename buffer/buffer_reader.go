@@ -11,6 +11,14 @@ type BufferReader struct {
 
 var CRLF = []byte{'\r', '\n'}
 
+func (reader BufferReader) IsEmpty() bool {
+	return reader.Handle.Buffered() <= 0
+}
+
+func (reader BufferReader) ReadByte() (byte, error) {
+	return reader.Handle.ReadByte()
+}
+
 func (reader BufferReader) ReadInt() int {
 	line := reader.ReadLine()
 	value, _ := strconv.Atoi(line)
