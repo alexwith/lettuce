@@ -39,7 +39,7 @@ func (protocol *RESPProtocol) CreateBulkString(value string) string {
 	return fmt.Sprintf("%s%d\r\n%s\r\n", string(BulkStringType), len(value), value)
 }
 
-func (protocol *RESPProtocol) CreateArray(value interface{}) string {
+func (protocol *RESPProtocol) CreateArray(value any) string {
 	array := value.([]int) // Fix casting to []interface{}
 	length := len(array)
 
@@ -51,7 +51,7 @@ func (protocol *RESPProtocol) CreateArray(value interface{}) string {
 	return fmt.Sprintf("%s%d\r\n%s", string(ArrayType), length, respArray)
 }
 
-func (protocol *RESPProtocol) TryToCreateRESPType(value interface{}) string {
+func (protocol *RESPProtocol) TryToCreateRESPType(value any) string {
 	switch valueType := value.(type) {
 	case int:
 		return protocol.CreateInteger(value.(int))
