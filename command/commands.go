@@ -85,4 +85,19 @@ func RegisterCommands() {
 
 		protocol.WriteInteger(amount)
 	})
+
+	RegisterCommand("STRLEN", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+		key := string(context.Args[0])
+
+		var length int
+
+		value, present := storage.Get(key)
+		if !present {
+			length = 0
+		} else {
+			length = len(value)
+		}
+
+		protocol.WriteInteger(length)
+	})
 }
