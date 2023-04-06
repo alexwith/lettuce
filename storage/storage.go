@@ -10,7 +10,9 @@ var storageMutex = &sync.RWMutex{} // read-write lock
 
 func Set(key string, value []byte) {
 	storageMutex.Lock()
+
 	storage[key] = value
+
 	storageMutex.Unlock()
 }
 
@@ -22,6 +24,21 @@ func Get(key string) ([]byte, bool) {
 	storageMutex.RUnlock()
 
 	return value, present
+}
+
+func Delete(key string) bool {
+	_, present := Get(key)
+	if !present {
+		return false
+	}
+
+	storageMutex.Lock()
+
+	delete(storage, key)
+
+	storageMutex.Unlock()
+
+	return true
 }
 
 func Increment(key string) (int, error) {

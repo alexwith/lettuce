@@ -10,7 +10,7 @@ func (context *CommandContext) HasOption(option string) bool {
 	return present
 }
 
-func (context *CommandContext) GetOption(option string) (string, bool) {
+func (context *CommandContext) ReadOption(option string) (string, bool) {
 	index, present := context.StringifiedArgs[option]
 	if !present || index >= len(context.Args)-1 {
 		return "", false

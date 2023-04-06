@@ -57,4 +57,18 @@ func RegisterCommands() {
 
 		protocol.WriteInteger(value)
 	})
+
+	RegisterCommand("DEL", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+		var amount int
+		for _, key := range context.Args {
+			success := storage.Delete(string(key))
+			if !success {
+				continue
+			}
+
+			amount++
+		}
+
+		protocol.WriteInteger(amount)
+	})
 }
