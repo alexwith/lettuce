@@ -2,16 +2,25 @@ package storage
 
 import (
 	"strconv"
+	"sync"
 )
 
-var storage map[string][]byte = make(map[string][]byte)
+var storage = make(map[string][]byte)
+var storageMutex = &sync.RWMutex{} // read-write lock
 
 func Set(key string, value []byte) {
+	storageMutex.Lock()
 	storage[key] = value
+	storageMutex.Unlock()
 }
 
 func Get(key string) ([]byte, bool) {
+	storageMutex.RLock()
+
 	value, present := storage[key]
+
+	storageMutex.RUnlock()
+
 	return value, present
 }
 
