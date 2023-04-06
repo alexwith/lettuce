@@ -14,12 +14,15 @@ func Get(key string) []byte {
 	return storage[key]
 }
 
-func Increment(key string) int {
+func Increment(key string) (int, error) {
 	value := storage[key]
-	integer, _ := strconv.Atoi(string(value))
+	integer, err := strconv.Atoi(string(value))
+	if err != nil {
+		return -1, err
+	}
 
 	newInteger := integer + 1
 	Set(key, []byte(strconv.Itoa(newInteger)))
 
-	return newInteger
+	return newInteger, nil
 }

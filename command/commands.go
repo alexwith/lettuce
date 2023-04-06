@@ -49,7 +49,11 @@ func RegisterCommands() {
 
 	RegisterCommand("INCR", func(protocol *protocol.RESPProtocol, context *CommandContext) {
 		key := string(context.Args[0])
-		value := storage.Increment(key)
+		value, err := storage.Increment(key)
+		if err != nil {
+			protocol.WriteError("ERR value is not an integer or out of range")
+			return
+		}
 
 		protocol.WriteInteger(value)
 	})
