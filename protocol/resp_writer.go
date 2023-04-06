@@ -20,6 +20,10 @@ func (protocol *RESPProtocol) WriteArray(value []any) {
 	protocol.WriteRawString(protocol.CreateArray(value))
 }
 
+func (protocol *RESPProtocol) WriteNullBulkString() {
+	protocol.WriteRawString(protocol.CreateNullBulkString())
+}
+
 func (protocol *RESPProtocol) WriteRawString(value string) {
 	protocol.Connection.Write([]byte(value))
 }

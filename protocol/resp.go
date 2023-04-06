@@ -39,6 +39,10 @@ func (protocol *RESPProtocol) CreateBulkString(value string) string {
 	return fmt.Sprintf("%s%d\r\n%s\r\n", string(BulkStringType), len(value), value)
 }
 
+func (protocol *RESPProtocol) CreateNullBulkString() string {
+	return "$-1\r\n"
+}
+
 func (protocol *RESPProtocol) CreateArray(value []any) string {
 	length := len(value)
 
