@@ -20,7 +20,7 @@ I will only be implementing the most important commands, as I will not have time
 - [x] PING 
 - [ ] KEYS 
 - [ ] SET
-- [ ] GET
+- [x] GET
 - [ ] APPEND
 - [ ] DEL
 - [ ] FLUSHALL

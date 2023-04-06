@@ -38,7 +38,11 @@ func RegisterCommands() {
 	RegisterCommand("GET", func(protocol *protocol.RESPProtocol, context *CommandContext) {
 		key := string(context.Args[0])
 
-		value := storage.Get(key)
+		value, present := storage.Get(key)
+		if !present {
+			protocol.WriteNullBulkString()
+			return
+		}
 
 		protocol.WriteBulkString(string(value))
 	})

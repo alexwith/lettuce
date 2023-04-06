@@ -10,8 +10,9 @@ func Set(key string, value []byte) {
 	storage[key] = value
 }
 
-func Get(key string) []byte {
-	return storage[key]
+func Get(key string) ([]byte, bool) {
+	value, present := storage[key]
+	return value, present
 }
 
 func Increment(key string) (int, error) {
