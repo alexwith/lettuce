@@ -22,11 +22,11 @@ I will only be implementing the most important commands, as I will not have time
 - [ ] SET
 - [x] GET
 - [ ] APPEND
-- [ ] DEL
+- [x] DEL
 - [ ] FLUSHALL
 - [ ] TTL
 - [ ] EXPIRE
-- [ ] EXISTS
+- [x] EXISTS
 - [ ] STRLEN
 - [x] INCR
 

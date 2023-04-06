@@ -71,4 +71,18 @@ func RegisterCommands() {
 
 		protocol.WriteInteger(amount)
 	})
+
+	RegisterCommand("EXISTS", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+		var amount int
+		for _, key := range context.Args {
+			_, present := storage.Get(string(key))
+			if !present {
+				continue
+			}
+
+			amount++
+		}
+
+		protocol.WriteInteger(amount)
+	})
 }
