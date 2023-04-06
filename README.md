@@ -30,6 +30,11 @@ I will only be implementing the most important commands, as I will not have time
 - [ ] STRLEN
 - [x] INCR
 
+The Lettuce server has been built based on documentation from the following sources:
+- https://redis.io/docs/reference/protocol-spec/
+- https://redis.io/commands
+- https://redis.io/docs/management/persistence/
+
 ## License
 Lettuce is free and open source software. The software is released under the terms of
 the [GPL-3.0 license]("https://github.com/alexwith/lettuce/blob/main/LICENSE").
