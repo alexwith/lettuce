@@ -5,10 +5,6 @@ import (
 	"github.com/alexwith/lettuce/storage"
 )
 
-type CommandContext struct {
-	Args [][]byte
-}
-
 var commands map[string]any = make(map[string]any)
 
 func GetCommand(command string) any {

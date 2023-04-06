@@ -83,8 +83,14 @@ func HandleCommand(respProtocol *protocol.RESPProtocol, redisCommand string, red
 		return
 	}
 
+	var stringifiedArgs map[string]int = make(map[string]int)
+	for index, arg := range redisCommandArgs {
+		stringifiedArgs[string(arg)] = index
+	}
+
 	commandContext := &command.CommandContext{
-		Args: redisCommandArgs,
+		Args:            redisCommandArgs,
+		StringifiedArgs: stringifiedArgs,
 	}
 
 	commandHandler.(func(*protocol.RESPProtocol, *command.CommandContext))(respProtocol, commandContext)
