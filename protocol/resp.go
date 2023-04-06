@@ -23,6 +23,11 @@ const (
 	ArrayType        DataType = '*'
 )
 
+const (
+	NullBulkString string = "$-1\r\n"
+	NullArray      string = "*-1\r\n"
+)
+
 func (protocol *RESPProtocol) CreateSimpleString(value string) string {
 	return fmt.Sprintf("%s%s\r\n", string(SimpleStringType), value)
 }
@@ -39,10 +44,6 @@ func (protocol *RESPProtocol) CreateBulkString(value string) string {
 	return fmt.Sprintf("%s%d\r\n%s\r\n", string(BulkStringType), len(value), value)
 }
 
-func (protocol *RESPProtocol) CreateNullBulkString() string {
-	return "$-1\r\n"
-}
-
 func (protocol *RESPProtocol) CreateArray(value []any) string {
 	length := len(value)
 
@@ -55,6 +56,10 @@ func (protocol *RESPProtocol) CreateArray(value []any) string {
 }
 
 func (protocol *RESPProtocol) TryToCreateRESPType(value any) string {
+	if value == nil {
+		return NullBulkString
+	}
+
 	switch valueType := value.(type) {
 	case int:
 		return protocol.CreateInteger(value.(int))

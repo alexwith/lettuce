@@ -11,7 +11,7 @@ It is worth noting that this is just a fun project for learning purposes, but I 
 - [x] Integers
 - [x] Bulk Strings
 - [x] Arrays
-- [ ] Null elements in Arrays
+- [x] Null Array and Bulk Strings
 - [x] Telnet commands
 - [x] Pipelining
 

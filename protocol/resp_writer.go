@@ -21,7 +21,11 @@ func (protocol *RESPProtocol) WriteArray(value []any) {
 }
 
 func (protocol *RESPProtocol) WriteNullBulkString() {
-	protocol.WriteRawString(protocol.CreateNullBulkString())
+	protocol.WriteRawString(NullBulkString)
+}
+
+func (protocol *RESPProtocol) WriteNullArray() {
+	protocol.WriteRawString(NullArray)
 }
 
 func (protocol *RESPProtocol) WriteRawString(value string) {
