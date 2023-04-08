@@ -93,6 +93,19 @@ func Increment(key string) (int, error) {
 	return newInteger, nil
 }
 
+func Append(key string, value string) int {
+	currentValue, present := Get(key)
+	if !present {
+		currentValue = make([]byte, 0)
+	}
+
+	newValue := string(currentValue) + string(value)
+
+	Set(key, []byte(newValue), false)
+
+	return len(newValue)
+}
+
 func RegisterExpireTask() {
 	ticker := time.NewTicker(250 * time.Millisecond)
 	for {

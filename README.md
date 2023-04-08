@@ -21,7 +21,7 @@ I will only be implementing the most important commands, as I will not have time
 - [ ] KEYS 
 - [x] SET
 - [x] GET
-- [ ] APPEND
+- [x] APPEND
 - [x] DEL
 - [x] TTL
 - [x] EXPIRE

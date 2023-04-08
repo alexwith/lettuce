@@ -227,4 +227,13 @@ func RegisterCommands() {
 
 		protocol.WriteInteger(remainingTime)
 	})
+
+	RegisterCommand("APPEND", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+		key := context.StringArg(0)
+		value := context.StringArg(1)
+
+		length := storage.Append(key, value)
+
+		protocol.WriteInteger(length)
+	})
 }
