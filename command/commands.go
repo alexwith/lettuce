@@ -25,7 +25,7 @@ func RegisterCommands() {
 			return
 		}
 
-		response := string(context.Args[0])
+		response := context.StringArg(0)
 		protocol.WriteBulkString(response)
 	})
 
