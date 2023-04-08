@@ -28,11 +28,26 @@ func (context *CommandContext) HasOption(option string) bool {
 	return present
 }
 
-func (context *CommandContext) ReadOption(option string) (string, bool) {
+func (context *CommandContext) ReadOption(option string) ([]byte, bool) {
 	index, present := context.StringifiedArgs[option]
 	if !present || index >= len(context.Args)-1 {
-		return "", false
+		return make([]byte, 0), false
 	}
 
-	return string(context.Args[index+1]), true
+	return context.Args[index+1], true
+}
+
+func (context *CommandContext) ReadOptionAsString(option string) (string, bool) {
+	value, present := context.ReadOption(option)
+	return string(value), present
+}
+
+func (context *CommandContext) ReadOptionAsInt(option string) (int, bool) {
+	value, present := context.ReadOptionAsString(option)
+	integer, err := strconv.Atoi(value)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	return integer, present
 }
