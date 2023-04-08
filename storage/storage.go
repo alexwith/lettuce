@@ -53,6 +53,7 @@ func Expire(key string, seconds int, nx bool, xx bool, gt bool, lt bool) bool {
 	expireMutex.RLock()
 	currentExpireTime, present := expiries[key]
 	expireMutex.RUnlock()
+
 	if nx && present {
 		return false
 	}
@@ -85,4 +86,25 @@ func Increment(key string) (int, error) {
 	Set(key, []byte(strconv.Itoa(newInteger)))
 
 	return newInteger, nil
+}
+
+func RegisterExpireTask() {
+	ticker := time.NewTicker(250 * time.Millisecond)
+	for {
+		<-ticker.C
+
+		currentTime := time.Now().UnixMilli()
+
+		for key, expireTime := range expiries {
+			if currentTime < expireTime {
+				continue
+			}
+
+			expireMutex.Lock()
+			delete(expiries, key)
+			expireMutex.Unlock()
+
+			Delete(key)
+		}
+	}
 }
