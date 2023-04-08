@@ -10,24 +10,25 @@ This will start the lettuce server on port `6380`.
 
 You can also create your own custom redis server. Execute `go get github.com/alexwith/lettuce` in your own project, then initiate the server. The following example will also register a custom command:
 ```go
-package  main
+package main
 
-import  (
-  "github.com/alexwith/lettuce/command"
-  "github.com/alexwith/lettuce/protocol"
+import (
+	"github.com/alexwith/lettuce/command"
+	"github.com/alexwith/lettuce/lettuce"
+	"github.com/alexwith/lettuce/protocol"
 )
 
 const HOST string = "127.0.0.1"
 const PORT int16 = 6380
 
-func  main()  {
-  Setup(HOST, PORT, func()  {
-    registerCommands()
-  })
+func main()  {
+  lettuce.Setup(HOST, PORT, func() {
+		registerCommands()
+	})
 }
 
 func registerCommands()  {
-  command.RegisterCommand("CUSTOMPING",  func(protocol *protocol.RESPProtocol, context *command.CommandContext)  {
+  command.RegisterCommand("CUSTOMPING", func(protocol *protocol.RESPProtocol, context *command.CommandContext)  {
     if len(context.Args) <= 0 {
       protocol.WriteSimpleString("CUSTOMPONG")
       return

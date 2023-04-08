@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/alexwith/lettuce/command"
+	"github.com/alexwith/lettuce/lettuce"
 	"github.com/alexwith/lettuce/protocol"
 )
 
@@ -9,7 +10,7 @@ const HOST string = "127.0.0.1"
 const PORT int16 = 6380
 
 func main() {
-	Setup(HOST, PORT, func() {
+	lettuce.Setup(HOST, PORT, func() {
 		registerCommands()
 	})
 }
