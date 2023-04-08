@@ -7,18 +7,18 @@ import (
 )
 
 var storage = make(map[string][]byte)
-var expiries = make(map[string]int64)
+var timeouts = make(map[string]int64)
 var storageMutex = &sync.RWMutex{} // read-write lock
-var expireMutex = &sync.RWMutex{}  // read-write lock
+var timoutsMutex = &sync.RWMutex{} // read-write lock
 
 func Set(key string, value []byte) {
 	storageMutex.Lock()
 	storage[key] = value
 	storageMutex.Unlock()
 
-	expireMutex.Lock()
-	delete(expiries, key)
-	expireMutex.Unlock()
+	timoutsMutex.Lock()
+	delete(timeouts, key)
+	timoutsMutex.Unlock()
 }
 
 func Get(key string) ([]byte, bool) {
@@ -50,9 +50,9 @@ func Expire(key string, seconds int, nx bool, xx bool, gt bool, lt bool) bool {
 		return false
 	}
 
-	expireMutex.RLock()
-	currentExpireTime, present := expiries[key]
-	expireMutex.RUnlock()
+	timoutsMutex.RLock()
+	currentExpireTime, present := timeouts[key]
+	timoutsMutex.RUnlock()
 
 	if nx && present {
 		return false
@@ -70,7 +70,7 @@ func Expire(key string, seconds int, nx bool, xx bool, gt bool, lt bool) bool {
 		return false
 	}
 
-	expiries[key] = expireTime
+	timeouts[key] = expireTime
 
 	return true
 }
@@ -95,14 +95,14 @@ func RegisterExpireTask() {
 
 		currentTime := time.Now().UnixMilli()
 
-		for key, expireTime := range expiries {
+		for key, expireTime := range timeouts {
 			if currentTime < expireTime {
 				continue
 			}
 
-			expireMutex.Lock()
-			delete(expiries, key)
-			expireMutex.Unlock()
+			timoutsMutex.Lock()
+			delete(timeouts, key)
+			timoutsMutex.Unlock()
 
 			Delete(key)
 		}
