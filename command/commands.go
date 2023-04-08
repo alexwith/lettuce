@@ -100,4 +100,23 @@ func RegisterCommands() {
 
 		protocol.WriteInteger(length)
 	})
+
+	RegisterCommand("EXPIRE", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+		key := context.StringArg(0)
+		seconds := context.IntegerArg(1)
+
+		nx := context.HasOption("NX")
+		xx := context.HasOption("XX")
+		gt := context.HasOption("GT")
+		lt := context.HasOption("LT")
+
+		success := storage.Expire(key, seconds, nx, xx, gt, lt)
+
+		status := 0
+		if success {
+			status = 1
+		}
+
+		protocol.WriteInteger(status)
+	})
 }

@@ -24,7 +24,7 @@ I will only be implementing the most important commands, as I will not have time
 - [ ] APPEND
 - [x] DEL
 - [ ] TTL
-- [ ] EXPIRE
+- [x] EXPIRE
 - [ ] PERSIST
 - [x] EXISTS
 - [x] STRLEN
