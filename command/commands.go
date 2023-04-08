@@ -27,7 +27,7 @@ func RegisterCommands() {
 	})
 
 	RegisterCommand("SET", func(protocol *protocol.RESPProtocol, context *CommandContext) {
-		key := string(context.Args[0])
+		key := context.StringArg(0)
 		value := context.Args[1]
 
 		storage.Set(key, value)
@@ -36,7 +36,7 @@ func RegisterCommands() {
 	})
 
 	RegisterCommand("GET", func(protocol *protocol.RESPProtocol, context *CommandContext) {
-		key := string(context.Args[0])
+		key := context.StringArg(0)
 
 		value, present := storage.Get(key)
 		if !present {
@@ -48,7 +48,7 @@ func RegisterCommands() {
 	})
 
 	RegisterCommand("INCR", func(protocol *protocol.RESPProtocol, context *CommandContext) {
-		key := string(context.Args[0])
+		key := context.StringArg(0)
 		value, err := storage.Increment(key)
 		if err != nil {
 			protocol.WriteError("ERR value is not an integer or out of range")
@@ -87,7 +87,7 @@ func RegisterCommands() {
 	})
 
 	RegisterCommand("STRLEN", func(protocol *protocol.RESPProtocol, context *CommandContext) {
-		key := string(context.Args[0])
+		key := context.StringArg(0)
 
 		var length int
 
