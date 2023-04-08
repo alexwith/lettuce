@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexwith/lettuce/protocol"
 	"github.com/alexwith/lettuce/storage"
+	glob "github.com/ganbarodigital/go_glob"
 )
 
 var commands map[string]any = make(map[string]any)
@@ -235,5 +236,23 @@ func RegisterCommands() {
 		length := storage.Append(key, value)
 
 		protocol.WriteInteger(length)
+	})
+
+	RegisterCommand("KEYS", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+		pattern := context.StringArg(0)
+
+		glob := glob.NewGlob(pattern)
+
+		var keys []any
+		for key, _ := range storage.Storage {
+			matches, err := glob.Match(key)
+			if !matches || err != nil {
+				continue
+			}
+
+			keys = append(keys, key)
+		}
+
+		protocol.WriteArray(keys)
 	})
 }

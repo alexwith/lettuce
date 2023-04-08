@@ -6,26 +6,27 @@ import (
 	"time"
 )
 
-var storage = make(map[string][]byte)
-var timeouts = make(map[string]int64)
+var Storage = make(map[string][]byte)
+var Timeouts = make(map[string]int64)
+
 var storageMutex = &sync.RWMutex{}  // read-write lock
 var timeoutsMutex = &sync.RWMutex{} // read-write lock
 
 func Set(key string, value []byte, clearTimeout bool) {
 	storageMutex.Lock()
-	storage[key] = value
+	Storage[key] = value
 	storageMutex.Unlock()
 
 	if clearTimeout {
 		timeoutsMutex.Lock()
-		delete(timeouts, key)
+		delete(Timeouts, key)
 		timeoutsMutex.Unlock()
 	}
 }
 
 func Get(key string) ([]byte, bool) {
 	storageMutex.RLock()
-	value, present := storage[key]
+	value, present := Storage[key]
 	storageMutex.RUnlock()
 
 	return value, present
@@ -38,7 +39,7 @@ func Delete(key string) bool {
 	}
 
 	storageMutex.Lock()
-	delete(storage, key)
+	delete(Storage, key)
 	storageMutex.Unlock()
 
 	return true
@@ -46,7 +47,7 @@ func Delete(key string) bool {
 
 func GetTimeout(key string) (int64, bool) {
 	timeoutsMutex.RLock()
-	value, present := timeouts[key]
+	value, present := Timeouts[key]
 	timeoutsMutex.RUnlock()
 
 	return value, present
@@ -54,7 +55,7 @@ func GetTimeout(key string) (int64, bool) {
 
 func Expire(key string, timeout int64) {
 	timeoutsMutex.Lock()
-	timeouts[key] = timeout
+	Timeouts[key] = timeout
 	timeoutsMutex.Unlock()
 }
 
@@ -74,14 +75,14 @@ func Persist(key string) bool {
 	}
 
 	timeoutsMutex.Lock()
-	delete(timeouts, key)
+	delete(Timeouts, key)
 	timeoutsMutex.Unlock()
 
 	return true
 }
 
 func Increment(key string) (int, error) {
-	value := storage[key]
+	value := Storage[key]
 	integer, err := strconv.Atoi(string(value))
 	if err != nil {
 		return -1, err
@@ -113,13 +114,13 @@ func RegisterExpireTask() {
 
 		currentTime := time.Now().UnixMilli()
 
-		for key, timeout := range timeouts {
+		for key, timeout := range Timeouts {
 			if currentTime < timeout {
 				continue
 			}
 
 			timeoutsMutex.Lock()
-			delete(timeouts, key)
+			delete(Timeouts, key)
 			timeoutsMutex.Unlock()
 
 			Delete(key)
