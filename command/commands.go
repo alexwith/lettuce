@@ -107,19 +107,46 @@ func RegisterCommands() {
 		key := context.StringArg(0)
 		seconds := context.IntegerArg(1)
 
+		failed := func() {
+			protocol.WriteInteger(0)
+		}
+
 		nx := context.HasOption("NX")
 		xx := context.HasOption("XX")
 		gt := context.HasOption("GT")
 		lt := context.HasOption("LT")
 
-		success := storage.Expire(key, seconds, nx, xx, gt, lt)
-
-		status := 0
-		if success {
-			status = 1
+		_, keyPresent := storage.Get(key)
+		if !keyPresent {
+			failed()
+			return
 		}
 
-		protocol.WriteInteger(status)
+		currentTimout, timeoutPresent := storage.GetTimeout(key)
+
+		if nx && timeoutPresent {
+			failed()
+			return
+		}
+
+		if xx && !timeoutPresent {
+			failed()
+			return
+		}
+
+		remainingTime := int(currentTimout-time.Now().UnixMilli()) / 1000
+		if gt && seconds <= remainingTime {
+			failed()
+			return
+		}
+
+		if lt && seconds >= remainingTime {
+			failed()
+			return
+		}
+
+		storage.Expire(key, seconds)
+		protocol.WriteInteger(1)
 	})
 
 	RegisterCommand("PERSIST", func(protocol *protocol.RESPProtocol, context *CommandContext) {

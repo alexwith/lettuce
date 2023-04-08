@@ -50,35 +50,12 @@ func GetTimeout(key string) (int64, bool) {
 	return value, present
 }
 
-func Expire(key string, seconds int, nx bool, xx bool, gt bool, lt bool) bool {
+func Expire(key string, seconds int) {
 	timeout := time.Now().UnixMilli() + int64(seconds*1000)
 
-	_, keyPresent := Get(key)
-	if !keyPresent {
-		return false
-	}
-
-	currentTimout, timeoutPresent := GetTimeout(key)
-
-	if nx && timeoutPresent {
-		return false
-	}
-
-	if xx && !timeoutPresent {
-		return false
-	}
-
-	if gt && timeout <= currentTimout {
-		return false
-	}
-
-	if lt && timeout >= currentTimout {
-		return false
-	}
-
+	timeoutsMutex.Lock()
 	timeouts[key] = timeout
-
-	return true
+	timeoutsMutex.Unlock()
 }
 
 func Persist(key string) bool {
