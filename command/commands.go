@@ -1,6 +1,8 @@
 package command
 
 import (
+	"time"
+
 	"github.com/alexwith/lettuce/protocol"
 	"github.com/alexwith/lettuce/storage"
 )
@@ -118,5 +120,38 @@ func RegisterCommands() {
 		}
 
 		protocol.WriteInteger(status)
+	})
+
+	RegisterCommand("PERSIST", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+		key := context.StringArg(0)
+
+		success := storage.Persist(key)
+
+		status := 0
+		if success {
+			status = 1
+		}
+
+		protocol.WriteInteger(status)
+	})
+
+	RegisterCommand("TTL", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+		key := context.StringArg(0)
+
+		_, keyPresent := storage.Get(key)
+		if !keyPresent {
+			protocol.WriteInteger(-2)
+			return
+		}
+
+		timeout, timeoutPresent := storage.GetTimeout(key)
+		if !timeoutPresent {
+			protocol.WriteInteger(-1)
+			return
+		}
+
+		remainingTime := int(timeout-time.Now().UnixMilli()) / 1000
+
+		protocol.WriteInteger(remainingTime)
 	})
 }

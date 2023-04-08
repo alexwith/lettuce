@@ -8,17 +8,17 @@ import (
 
 var storage = make(map[string][]byte)
 var timeouts = make(map[string]int64)
-var storageMutex = &sync.RWMutex{} // read-write lock
-var timoutsMutex = &sync.RWMutex{} // read-write lock
+var storageMutex = &sync.RWMutex{}  // read-write lock
+var timeoutsMutex = &sync.RWMutex{} // read-write lock
 
 func Set(key string, value []byte) {
 	storageMutex.Lock()
 	storage[key] = value
 	storageMutex.Unlock()
 
-	timoutsMutex.Lock()
+	timeoutsMutex.Lock()
 	delete(timeouts, key)
-	timoutsMutex.Unlock()
+	timeoutsMutex.Unlock()
 }
 
 func Get(key string) ([]byte, bool) {
@@ -42,35 +42,59 @@ func Delete(key string) bool {
 	return true
 }
 
+func GetTimeout(key string) (int64, bool) {
+	timeoutsMutex.RLock()
+	value, present := timeouts[key]
+	timeoutsMutex.RUnlock()
+
+	return value, present
+}
+
 func Expire(key string, seconds int, nx bool, xx bool, gt bool, lt bool) bool {
-	expireTime := time.Now().UnixMilli() + int64(seconds*1000)
+	timeout := time.Now().UnixMilli() + int64(seconds*1000)
 
 	_, keyPresent := Get(key)
 	if !keyPresent {
 		return false
 	}
 
-	timoutsMutex.RLock()
-	currentExpireTime, present := timeouts[key]
-	timoutsMutex.RUnlock()
+	currentTimout, timeoutPresent := GetTimeout(key)
 
-	if nx && present {
+	if nx && timeoutPresent {
 		return false
 	}
 
-	if xx && !present {
+	if xx && !timeoutPresent {
 		return false
 	}
 
-	if gt && expireTime <= currentExpireTime {
+	if gt && timeout <= currentTimout {
 		return false
 	}
 
-	if lt && expireTime >= currentExpireTime {
+	if lt && timeout >= currentTimout {
 		return false
 	}
 
-	timeouts[key] = expireTime
+	timeouts[key] = timeout
+
+	return true
+}
+
+func Persist(key string) bool {
+	_, keyPresent := Get(key)
+	if !keyPresent {
+		return false
+	}
+
+	_, timeoutPresent := GetTimeout(key)
+	if !timeoutPresent {
+		return false
+	}
+
+	timeoutsMutex.Lock()
+	delete(timeouts, key)
+	timeoutsMutex.Unlock()
 
 	return true
 }
@@ -95,14 +119,14 @@ func RegisterExpireTask() {
 
 		currentTime := time.Now().UnixMilli()
 
-		for key, expireTime := range timeouts {
-			if currentTime < expireTime {
+		for key, timeout := range timeouts {
+			if currentTime < timeout {
 				continue
 			}
 
-			timoutsMutex.Lock()
+			timeoutsMutex.Lock()
 			delete(timeouts, key)
-			timoutsMutex.Unlock()
+			timeoutsMutex.Unlock()
 
 			Delete(key)
 		}

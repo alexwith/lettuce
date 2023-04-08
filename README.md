@@ -23,9 +23,9 @@ I will only be implementing the most important commands, as I will not have time
 - [x] GET
 - [ ] APPEND
 - [x] DEL
-- [ ] TTL
+- [x] TTL
 - [x] EXPIRE
-- [ ] PERSIST
+- [x] PERSIST
 - [x] EXISTS
 - [x] STRLEN
 - [x] INCR
