@@ -13,9 +13,9 @@ You can also create your own custom redis server. Execute `go get github.com/ale
 package main
 
 import (
-	"github.com/alexwith/lettuce/command"
-	"github.com/alexwith/lettuce/lettuce"
-	"github.com/alexwith/lettuce/protocol"
+  "github.com/alexwith/lettuce/command"
+  "github.com/alexwith/lettuce/lettuce"
+  "github.com/alexwith/lettuce/protocol"
 )
 
 const HOST string = "127.0.0.1"
@@ -23,8 +23,8 @@ const PORT int16 = 6380
 
 func main()  {
   lettuce.Setup(HOST, PORT, func() {
-		registerCommands()
-	})
+    registerCommands()
+})
 }
 
 func registerCommands()  {
