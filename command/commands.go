@@ -244,7 +244,7 @@ func RegisterCommands() {
 		glob := glob.NewGlob(pattern)
 
 		var keys []any
-		for key, _ := range storage.Storage {
+		for key := range storage.Storage {
 			matches, err := glob.Match(key)
 			if !matches || err != nil {
 				continue
