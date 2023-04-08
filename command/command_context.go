@@ -46,7 +46,7 @@ func (context *CommandContext) ReadOptionAsInt(option string) (int, bool) {
 	value, present := context.ReadOptionAsString(option)
 	integer, err := strconv.Atoi(value)
 	if err != nil {
-		fmt.Println(err.Error())
+		return 0, false
 	}
 
 	return integer, present

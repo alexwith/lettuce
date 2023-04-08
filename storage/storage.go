@@ -11,14 +11,16 @@ var timeouts = make(map[string]int64)
 var storageMutex = &sync.RWMutex{}  // read-write lock
 var timeoutsMutex = &sync.RWMutex{} // read-write lock
 
-func Set(key string, value []byte) {
+func Set(key string, value []byte, clearTimeout bool) {
 	storageMutex.Lock()
 	storage[key] = value
 	storageMutex.Unlock()
 
-	timeoutsMutex.Lock()
-	delete(timeouts, key)
-	timeoutsMutex.Unlock()
+	if clearTimeout {
+		timeoutsMutex.Lock()
+		delete(timeouts, key)
+		timeoutsMutex.Unlock()
+	}
 }
 
 func Get(key string) ([]byte, bool) {
@@ -50,12 +52,14 @@ func GetTimeout(key string) (int64, bool) {
 	return value, present
 }
 
-func Expire(key string, seconds int) {
-	timeout := time.Now().UnixMilli() + int64(seconds*1000)
-
+func Expire(key string, timeout int64) {
 	timeoutsMutex.Lock()
 	timeouts[key] = timeout
 	timeoutsMutex.Unlock()
+}
+
+func ExpireIn(key string, milliseconds int64) {
+	Expire(key, time.Now().UnixMilli()+milliseconds)
 }
 
 func Persist(key string) bool {
@@ -84,7 +88,7 @@ func Increment(key string) (int, error) {
 	}
 
 	newInteger := integer + 1
-	Set(key, []byte(strconv.Itoa(newInteger)))
+	Set(key, []byte(strconv.Itoa(newInteger)), false)
 
 	return newInteger, nil
 }

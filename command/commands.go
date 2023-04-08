@@ -32,7 +32,53 @@ func RegisterCommands() {
 		key := context.StringArg(0)
 		value := context.Args[1]
 
-		storage.Set(key, value)
+		expireTime, ex := context.ReadOptionAsInt("EX")
+		expireTimeMs, px := context.ReadOptionAsInt("PX")
+		timeout, exat := context.ReadOptionAsInt("EXAT")
+		timeoutMs, pxat := context.ReadOptionAsInt("PXAT")
+		nx := context.HasOption("NX")
+		xx := context.HasOption("XX")
+		keepttl := context.HasOption("KEEPTTL")
+		get := context.HasOption("GET")
+
+		oldValue, oldPresent := storage.Get(key)
+		if nx && oldPresent {
+			protocol.WriteNullBulkString()
+			return
+		}
+
+		if xx && !oldPresent {
+			protocol.WriteNullBulkString()
+			return
+		}
+
+		storage.Set(key, value, !keepttl)
+
+		if ex {
+			storage.ExpireIn(key, int64(expireTime*1000))
+		}
+
+		if px {
+			storage.ExpireIn(key, int64(expireTimeMs))
+		}
+
+		if exat {
+			storage.Expire(key, int64(timeout*1000))
+		}
+
+		if pxat {
+			storage.Expire(key, int64(timeoutMs))
+		}
+
+		if get {
+			if oldPresent {
+				protocol.WriteBulkString(string(oldValue))
+			} else {
+				protocol.WriteNullBulkString()
+			}
+
+			return
+		}
 
 		protocol.WriteSimpleString("OK")
 	})
@@ -134,18 +180,18 @@ func RegisterCommands() {
 			return
 		}
 
-		remainingTime := int(currentTimout-time.Now().UnixMilli()) / 1000
-		if gt && seconds <= remainingTime {
+		timeout := time.Now().UnixMilli() + int64(seconds*1000)
+		if gt && timeout <= currentTimout {
 			failed()
 			return
 		}
 
-		if lt && seconds >= remainingTime {
+		if lt && timeout >= currentTimout {
 			failed()
 			return
 		}
 
-		storage.Expire(key, seconds)
+		storage.Expire(key, timeout)
 		protocol.WriteInteger(1)
 	})
 
