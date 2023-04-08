@@ -23,11 +23,11 @@ I will only be implementing the most important commands, as I will not have time
 - [x] GET
 - [ ] APPEND
 - [x] DEL
-- [ ] FLUSHALL
 - [ ] TTL
 - [ ] EXPIRE
+- [ ] PERSIST
 - [x] EXISTS
-- [ ] STRLEN
+- [x] STRLEN
 - [x] INCR
 
 The Lettuce server has been built based on documentation from the following sources:

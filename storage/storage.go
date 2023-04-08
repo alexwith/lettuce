@@ -3,15 +3,19 @@ package storage
 import (
 	"strconv"
 	"sync"
+	"time"
 )
 
 var storage = make(map[string][]byte)
+var expiries = make(map[string]int64)
 var storageMutex = &sync.RWMutex{} // read-write lock
 
 func Set(key string, value []byte) {
 	storageMutex.Lock()
 
 	storage[key] = value
+
+	delete(expiries, key)
 
 	storageMutex.Unlock()
 }
@@ -37,6 +41,31 @@ func Delete(key string) bool {
 	delete(storage, key)
 
 	storageMutex.Unlock()
+
+	return true
+}
+
+func Expire(key string, seconds int, nx bool, xx bool, gt bool, lt bool) bool {
+	expireTime := time.Now().UnixMilli() + int64(seconds*1000)
+
+	currentExpireTime, present := expiries[key]
+	if nx && present {
+		return false
+	}
+
+	if xx && !present {
+		return false
+	}
+
+	if gt && expireTime <= currentExpireTime {
+		return false
+	}
+
+	if lt && expireTime >= currentExpireTime {
+		return false
+	}
+
+	expiries[key] = expireTime
 
 	return true
 }
