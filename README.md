@@ -66,7 +66,15 @@ I will only be implementing the most important commands, as I will not have time
 - [x] STRLEN
 - [x] INCR
 
-
+### Pub/Sub
+- [ ] PSUBSCRIBE
+- [ ] PUNSUBSCRIBE
+- [ ] QUIT
+- [ ] RESET
+- [ ] SSUBSCRIBE
+- [ ] SUBSCRIBE
+- [ ] SUNSUBSCRIBE
+- [ ] UNSUBSCRIBE
 
 The Lettuce server has been built based on documentation from the following sources:
 - https://redis.io/docs/reference/protocol-spec/

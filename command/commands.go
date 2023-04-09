@@ -1,6 +1,7 @@
 package command
 
 import (
+	"strings"
 	"time"
 
 	"github.com/alexwith/lettuce/protocol"
@@ -11,7 +12,7 @@ import (
 var commands map[string]any = make(map[string]any)
 
 func GetCommand(command string) any {
-	return commands[command]
+	return commands[strings.ToUpper(command)]
 }
 
 func RegisterCommand(command string, handler func(protocol *protocol.RESPProtocol, context *CommandContext)) {
