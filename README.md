@@ -2,7 +2,9 @@
 
 Lettuce is a redis server written in Go. It implements the [RESP protocol](https://redis.io/docs/reference/protocol-spec/) and should therefore work with any redis client. 
 
-It is worth noting that this is just a fun project for learning purposes, but I do attempt to make it as fast and functional as possible.
+### Notes
+- This is just a fun project for learning about Golang and TCP-based protocols, but I do attempt to make it as fast and functional as possible.
+- There is **no persistence** implemented, so Lettuce should only be utilised as a cache or pub/sub.
 
 ## Getting Started
 If you want to use the pre-existing Lettuce server, navigate to it's location and execute: `go run .`
@@ -65,7 +67,6 @@ I will only be implementing the most important commands, as I will not have time
 - [x] EXISTS
 - [x] STRLEN
 - [x] INCR
-- [ ] SAVE
 
 ### Pub/Sub
 - [ ] PSUBSCRIBE
