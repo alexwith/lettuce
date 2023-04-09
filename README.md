@@ -28,7 +28,7 @@ func main()  {
 }
 
 func registerCommands()  {
-  command.RegisterCommand("CUSTOMPING", func(protocol *protocol.RESPProtocol, context *command.CommandContext)  {
+  command.RegisterCommand("CUSTOMPING", -1, func(protocol *protocol.RESPProtocol, context *command.CommandContext)  {
     if len(context.Args) <= 0 {
       protocol.WriteSimpleString("CUSTOMPONG")
       return

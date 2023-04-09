@@ -9,18 +9,28 @@ import (
 	glob "github.com/ganbarodigital/go_glob"
 )
 
-var commands map[string]any = make(map[string]any)
+type CommandData struct {
+	Command       string
+	ArgumentsSize int
+	Handler       func(protocol *protocol.RESPProtocol, context *CommandContext)
+}
 
-func GetCommand(command string) any {
+var commands map[string]*CommandData = make(map[string]*CommandData)
+
+func GetCommand(command string) *CommandData {
 	return commands[strings.ToUpper(command)]
 }
 
-func RegisterCommand(command string, handler func(protocol *protocol.RESPProtocol, context *CommandContext)) {
-	commands[command] = handler
+func RegisterCommand(command string, argumentsSize int, handler func(protocol *protocol.RESPProtocol, context *CommandContext)) {
+	commands[command] = &CommandData{
+		Command:       command,
+		ArgumentsSize: argumentsSize,
+		Handler:       handler,
+	}
 }
 
 func RegisterCommands() {
-	RegisterCommand("PING", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("PING", -1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
 		if len(context.Args) <= 0 {
 			protocol.WriteSimpleString("PONG")
 			return
@@ -30,7 +40,7 @@ func RegisterCommands() {
 		protocol.WriteBulkString(response)
 	})
 
-	RegisterCommand("SET", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("SET", 2, func(protocol *protocol.RESPProtocol, context *CommandContext) {
 		key := context.StringArg(0)
 		value := context.Args[1]
 
@@ -85,7 +95,7 @@ func RegisterCommands() {
 		protocol.WriteSimpleString("OK")
 	})
 
-	RegisterCommand("GET", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("GET", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
 		key := context.StringArg(0)
 
 		value, present := storage.Get(key)
@@ -97,7 +107,7 @@ func RegisterCommands() {
 		protocol.WriteBulkString(string(value))
 	})
 
-	RegisterCommand("INCR", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("INCR", 2, func(protocol *protocol.RESPProtocol, context *CommandContext) {
 		key := context.StringArg(0)
 		value, err := storage.Increment(key)
 		if err != nil {
@@ -108,7 +118,7 @@ func RegisterCommands() {
 		protocol.WriteInteger(value)
 	})
 
-	RegisterCommand("DEL", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("DEL", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
 		var amount int
 		for _, key := range context.Args {
 			success := storage.Delete(string(key))
@@ -122,7 +132,7 @@ func RegisterCommands() {
 		protocol.WriteInteger(amount)
 	})
 
-	RegisterCommand("EXISTS", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("EXISTS", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
 		var amount int
 		for _, key := range context.Args {
 			_, present := storage.Get(string(key))
@@ -136,7 +146,7 @@ func RegisterCommands() {
 		protocol.WriteInteger(amount)
 	})
 
-	RegisterCommand("STRLEN", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("STRLEN", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
 		key := context.StringArg(0)
 
 		var length int
@@ -151,7 +161,7 @@ func RegisterCommands() {
 		protocol.WriteInteger(length)
 	})
 
-	RegisterCommand("EXPIRE", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("EXPIRE", 2, func(protocol *protocol.RESPProtocol, context *CommandContext) {
 		key := context.StringArg(0)
 		seconds := context.IntegerArg(1)
 
@@ -197,7 +207,7 @@ func RegisterCommands() {
 		protocol.WriteInteger(1)
 	})
 
-	RegisterCommand("PERSIST", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("PERSIST", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
 		key := context.StringArg(0)
 
 		success := storage.Persist(key)
@@ -210,7 +220,7 @@ func RegisterCommands() {
 		protocol.WriteInteger(status)
 	})
 
-	RegisterCommand("TTL", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("TTL", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
 		key := context.StringArg(0)
 
 		_, keyPresent := storage.Get(key)
@@ -230,7 +240,7 @@ func RegisterCommands() {
 		protocol.WriteInteger(remainingTime)
 	})
 
-	RegisterCommand("APPEND", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("APPEND", 2, func(protocol *protocol.RESPProtocol, context *CommandContext) {
 		key := context.StringArg(0)
 		value := context.StringArg(1)
 
@@ -239,7 +249,7 @@ func RegisterCommands() {
 		protocol.WriteInteger(length)
 	})
 
-	RegisterCommand("KEYS", func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("KEYS", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
 		pattern := context.StringArg(0)
 
 		glob := glob.NewGlob(pattern)

@@ -70,8 +70,8 @@ func HandleRawCommand(respProtocol *protocol.RESPProtocol) {
 }
 
 func HandleCommand(respProtocol *protocol.RESPProtocol, redisCommand string, redisCommandArgs [][]byte) {
-	commandHandler := command.GetCommand(redisCommand)
-	if commandHandler == nil {
+	commandData := command.GetCommand(redisCommand)
+	if commandData == nil {
 		var unknownCommandArgs []string
 		for i := 0; i < len(redisCommandArgs); i++ {
 			unknownCommandArg := fmt.Sprintf("'%s'", string(redisCommandArgs[i]))
@@ -80,6 +80,12 @@ func HandleCommand(respProtocol *protocol.RESPProtocol, redisCommand string, red
 
 		error := fmt.Sprintf("ERR unknown command '%s', with args beginning with: %s", redisCommand, strings.Join(unknownCommandArgs, " "))
 		respProtocol.WriteError(error)
+		return
+	}
+
+	requiredArgumentsSize := commandData.ArgumentsSize
+	if requiredArgumentsSize != -1 && len(redisCommandArgs) < requiredArgumentsSize {
+		respProtocol.WriteError(fmt.Sprintf("ERR wrong number of arguments for '%s' command", redisCommand))
 		return
 	}
 
@@ -93,5 +99,5 @@ func HandleCommand(respProtocol *protocol.RESPProtocol, redisCommand string, red
 		StringifiedArgs: stringifiedArgs,
 	}
 
-	commandHandler.(func(*protocol.RESPProtocol, *command.CommandContext))(respProtocol, commandContext)
+	commandData.Handler(respProtocol, commandContext)
 }
