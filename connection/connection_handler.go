@@ -91,7 +91,7 @@ func HandleCommand(respProtocol *protocol.RESPProtocol, redisCommand string, red
 
 	var stringifiedArgs map[string]int = make(map[string]int)
 	for index, arg := range redisCommandArgs {
-		stringifiedArgs[string(arg)] = index
+		stringifiedArgs[strings.ToUpper(string(arg))] = index
 	}
 
 	commandContext := &command.CommandContext{

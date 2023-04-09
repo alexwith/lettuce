@@ -3,6 +3,7 @@ package command
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 type CommandContext struct {
@@ -24,12 +25,12 @@ func (context *CommandContext) IntegerArg(index int) int {
 }
 
 func (context *CommandContext) HasOption(option string) bool {
-	_, present := context.StringifiedArgs[option]
+	_, present := context.StringifiedArgs[strings.ToUpper(option)]
 	return present
 }
 
 func (context *CommandContext) ReadOption(option string) ([]byte, bool) {
-	index, present := context.StringifiedArgs[option]
+	index, present := context.StringifiedArgs[strings.ToUpper(option)]
 	if !present || index >= len(context.Args)-1 {
 		return make([]byte, 0), false
 	}

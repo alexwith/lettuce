@@ -5,10 +5,10 @@ import (
 	"strconv"
 )
 
-func (protocol *RESPProtocol) GetDataType() (DataType, error) {
+func (protocol *RESPProtocol) GetDataType() (DataStringType, error) {
 	dataType, err := protocol.Reader.ReadByte()
 
-	return DataType(dataType), err
+	return DataStringType(dataType), err
 }
 
 func (protocol *RESPProtocol) ParseDataType() ([]byte, error) {

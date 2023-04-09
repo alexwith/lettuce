@@ -13,14 +13,14 @@ type RESPProtocol struct {
 	Reader     *buffer.BufferReader
 }
 
-type DataType byte
+type DataStringType byte
 
 const (
-	SimpleStringType DataType = '+'
-	ErrorType        DataType = '-'
-	IntegerType      DataType = ':'
-	BulkStringType   DataType = '$'
-	ArrayType        DataType = '*'
+	SimpleStringType DataStringType = '+'
+	ErrorType        DataStringType = '-'
+	IntegerType      DataStringType = ':'
+	BulkStringType   DataStringType = '$'
+	ArrayType        DataStringType = '*'
 )
 
 const (
