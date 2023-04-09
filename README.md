@@ -24,7 +24,7 @@ const PORT int16 = 6380
 func main()  {
   lettuce.Setup(HOST, PORT, func() {
     registerCommands()
-})
+  })
 }
 
 func registerCommands()  {
