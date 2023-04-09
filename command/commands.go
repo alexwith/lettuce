@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/alexwith/lettuce/protocol"
+	"github.com/alexwith/lettuce/pubsub"
 	"github.com/alexwith/lettuce/storage"
 	glob "github.com/ganbarodigital/go_glob"
 )
@@ -265,5 +266,11 @@ func RegisterCommands() {
 		}
 
 		protocol.WriteArray(keys)
+	})
+
+	RegisterCommand("SUBSCRIBE", 2, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+		channel := context.StringArg(0)
+
+		pubsub.GetPubSub().Subscribe(channel)
 	})
 }
