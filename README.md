@@ -65,6 +65,7 @@ I will only be implementing the most important commands, as I will not have time
 - [x] EXISTS
 - [x] STRLEN
 - [x] INCR
+- [ ] SAVE
 
 ### Pub/Sub
 - [ ] PSUBSCRIBE
