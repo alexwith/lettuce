@@ -1,6 +1,8 @@
 package pubsub
 
-import "github.com/alexwith/lettuce/protocol"
+import (
+	"github.com/alexwith/lettuce/protocol"
+)
 
 type PubSub struct {
 	Connections []*protocol.RESPProtocol
@@ -13,13 +15,13 @@ func GetPubSub() *PubSub {
 }
 
 func (pubsub *PubSub) Subscribe(protocol *protocol.RESPProtocol, channel string) {
-	protocol.WriteRawString("Reading messages... (press Ctrl-C to quit)")
-
 	pubsub.Connections = append(pubsub.Connections, protocol)
 }
 
-func (pubsub *PubSub) Publish(protocol *protocol.RESPProtocol, channel string, message string) {
+func (pubsub *PubSub) Publish(protocol *protocol.RESPProtocol, channel string, message string) int {
 	for _, protocol := range pubsub.Connections {
-		protocol.WriteRawString(message)
+		protocol.WriteBulkString(message)
 	}
+
+	return len(pubsub.Connections)
 }

@@ -278,6 +278,7 @@ func RegisterCommands() {
 		channel := context.StringArg(0)
 		message := context.StringArg(1)
 
-		pubsub.GetPubSub().Publish(protocol, channel, message)
+		clients := pubsub.GetPubSub().Publish(protocol, channel, message)
+		protocol.WriteInteger(clients)
 	})
 }
