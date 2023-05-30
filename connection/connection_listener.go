@@ -26,6 +26,6 @@ func Listen(host string, port int16) {
 			continue
 		}
 
-		HandleConnection(connection)
+		go HandleConnection(connection)
 	}
 }

@@ -268,9 +268,16 @@ func RegisterCommands() {
 		protocol.WriteArray(keys)
 	})
 
-	RegisterCommand("SUBSCRIBE", 2, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("SUBSCRIBE", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
 		channel := context.StringArg(0)
 
-		pubsub.GetPubSub().Subscribe(channel)
+		pubsub.GetPubSub().Subscribe(protocol, channel)
+	})
+
+	RegisterCommand("PUBLISH", 2, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+		channel := context.StringArg(0)
+		message := context.StringArg(1)
+
+		pubsub.GetPubSub().Publish(protocol, channel, message)
 	})
 }
