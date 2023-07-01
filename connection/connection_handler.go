@@ -25,6 +25,7 @@ func HandleConnection(connection net.Conn) {
 	for {
 		dataType, err := respProtocol.GetDataType()
 		if err != nil && err == io.EOF {
+			respProtocol.Close()
 			break
 		}
 

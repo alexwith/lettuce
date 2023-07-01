@@ -80,14 +80,13 @@ I will only be implementing the most important commands, as I will not have time
 
 - [x] PUBLISH
 - [x] SUBSCRIBE
+- [x] UNSUBSCRIBE
 - [x] PSUBSCRIBE
 - [ ] PUNSUBSCRIBE
 - [ ] QUIT
 - [ ] RESET
 - [ ] SSUBSCRIBE
-- [ ] SUBSCRIBE
 - [ ] SUNSUBSCRIBE
-- [ ] UNSUBSCRIBE
 
 The Lettuce server has been built based on documentation from the following sources:
 

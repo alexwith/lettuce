@@ -9,8 +9,9 @@ import (
 )
 
 type RESPProtocol struct {
-	Connection net.Conn
-	Reader     *buffer.BufferReader
+	Connection     net.Conn
+	Reader         *buffer.BufferReader
+	CloseListeners []func()
 }
 
 type DataStringType byte
@@ -27,6 +28,12 @@ const (
 	NullBulkString string = "$-1\r\n"
 	NullArray      string = "*-1\r\n"
 )
+
+func (protocol *RESPProtocol) Close() {
+	for _, listener := range protocol.CloseListeners {
+		listener()
+	}
+}
 
 func (protocol *RESPProtocol) CreateSimpleString(value string) string {
 	return fmt.Sprintf("%s%s\r\n", string(SimpleStringType), value)
