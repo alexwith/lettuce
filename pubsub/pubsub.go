@@ -3,6 +3,7 @@ package pubsub
 import (
 	"github.com/alexwith/lettuce/protocol"
 	glob "github.com/ganbarodigital/go_glob"
+	"golang.org/x/exp/slices"
 )
 
 type PubSub struct {
@@ -24,6 +25,26 @@ func GetPubSub() *PubSub {
 
 func (pubsub *PubSub) Subscribe(protocol *protocol.RESPProtocol, channel string) {
 	pubsub.Connections[channel] = append(pubsub.Connections[channel], protocol)
+}
+
+func (pubsub *PubSub) Unsubscribe(protocol *protocol.RESPProtocol, channel string) {
+	connections := pubsub.Connections[channel]
+
+	index := -1
+	for i := range connections {
+		if connections[i] != protocol {
+			continue
+		}
+
+		index = i
+		break
+	}
+
+	if index == -1 {
+		return
+	}
+
+	pubsub.Connections[channel] = slices.Delete(pubsub.Connections[channel], index, index+1)
 }
 
 func (pubsub *PubSub) PSubscribe(protocol *protocol.RESPProtocol, pattern string) {

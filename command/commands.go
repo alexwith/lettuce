@@ -275,6 +275,13 @@ func RegisterCommands() {
 		}
 	})
 
+	RegisterCommand("UNSUBSCRIBE", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+		for i := 0; i < len(context.Args); i++ {
+			channel := context.StringArg(i)
+			pubsub.GetPubSub().Unsubscribe(protocol, channel)
+		}
+	})
+
 	RegisterCommand("PUBLISH", 2, func(protocol *protocol.RESPProtocol, context *CommandContext) {
 		channel := context.StringArg(0)
 		message := context.StringArg(1)
