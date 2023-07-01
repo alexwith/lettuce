@@ -2,6 +2,7 @@ package pubsub
 
 import (
 	"github.com/alexwith/lettuce/protocol"
+	glob "github.com/ganbarodigital/go_glob"
 )
 
 type PubSub struct {
@@ -23,6 +24,19 @@ func GetPubSub() *PubSub {
 
 func (pubsub *PubSub) Subscribe(protocol *protocol.RESPProtocol, channel string) {
 	pubsub.Connections[channel] = append(pubsub.Connections[channel], protocol)
+}
+
+func (pubsub *PubSub) PSubscribe(protocol *protocol.RESPProtocol, pattern string) {
+	glob := glob.NewGlob(pattern)
+	for channel := range pubsub.Connections {
+		matches, err := glob.Match(channel)
+		if err != nil || !matches {
+			continue
+		}
+
+		pubsub.Subscribe(protocol, channel)
+		break
+	}
 }
 
 func (pubsub *PubSub) Publish(protocol *protocol.RESPProtocol, channel string, message string) int {

@@ -283,5 +283,10 @@ func RegisterCommands() {
 		protocol.WriteInteger(clients)
 	})
 
-	RegisterCommand("PSUBSCRIBE")
+	RegisterCommand("PSUBSCRIBE", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+		for i := 0; i < len(context.Args); i++ {
+			pattern := context.StringArg(i)
+			pubsub.GetPubSub().PSubscribe(protocol, pattern)
+		}
+	})
 }

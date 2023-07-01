@@ -80,7 +80,7 @@ I will only be implementing the most important commands, as I will not have time
 
 - [x] PUBLISH
 - [x] SUBSCRIBE
-- [ ] PSUBSCRIBE
+- [x] PSUBSCRIBE
 - [ ] PUNSUBSCRIBE
 - [ ] QUIT
 - [ ] RESET
