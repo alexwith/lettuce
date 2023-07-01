@@ -11,9 +11,9 @@ import (
 )
 
 type CommandData struct {
-	Command       string
-	ArgumentsSize int
-	Handler       func(protocol *protocol.RESPProtocol, context *CommandContext)
+	Command      string
+	MinArguments int
+	Handler      func(protocol *protocol.RESPProtocol, context *CommandContext)
 }
 
 var commands map[string]*CommandData = make(map[string]*CommandData)
@@ -22,11 +22,11 @@ func GetCommand(command string) *CommandData {
 	return commands[strings.ToUpper(command)]
 }
 
-func RegisterCommand(command string, argumentsSize int, handler func(protocol *protocol.RESPProtocol, context *CommandContext)) {
+func RegisterCommand(command string, minArguments int, handler func(protocol *protocol.RESPProtocol, context *CommandContext)) {
 	commands[command] = &CommandData{
-		Command:       command,
-		ArgumentsSize: argumentsSize,
-		Handler:       handler,
+		Command:      command,
+		MinArguments: minArguments,
+		Handler:      handler,
 	}
 }
 
@@ -282,4 +282,6 @@ func RegisterCommands() {
 		clients := pubsub.GetPubSub().Publish(protocol, channel, message)
 		protocol.WriteInteger(clients)
 	})
+
+	RegisterCommand("PSUBSCRIBE")
 }

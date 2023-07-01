@@ -83,7 +83,7 @@ func HandleCommand(respProtocol *protocol.RESPProtocol, redisCommand string, red
 		return
 	}
 
-	requiredArgumentsSize := commandData.ArgumentsSize
+	requiredArgumentsSize := commandData.MinArguments
 	if requiredArgumentsSize != -1 && len(redisCommandArgs) < requiredArgumentsSize {
 		respProtocol.WriteError(fmt.Sprintf("ERR wrong number of arguments for '%s' command", redisCommand))
 		return
