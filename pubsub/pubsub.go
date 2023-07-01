@@ -5,23 +5,31 @@ import (
 )
 
 type PubSub struct {
-	Connections []*protocol.RESPProtocol
+	Connections map[string][]*protocol.RESPProtocol
 }
 
-var pubsub = &PubSub{}
+var pubsub = createPubSub()
+
+func createPubSub() *PubSub {
+	pubsub := &PubSub{}
+	pubsub.Connections = make(map[string][]*protocol.RESPProtocol)
+
+	return pubsub
+}
 
 func GetPubSub() *PubSub {
 	return pubsub
 }
 
 func (pubsub *PubSub) Subscribe(protocol *protocol.RESPProtocol, channel string) {
-	pubsub.Connections = append(pubsub.Connections, protocol)
+	pubsub.Connections[channel] = append(pubsub.Connections[channel], protocol)
 }
 
 func (pubsub *PubSub) Publish(protocol *protocol.RESPProtocol, channel string, message string) int {
-	for _, protocol := range pubsub.Connections {
+	connections := pubsub.Connections[channel]
+	for _, protocol := range connections {
 		protocol.WriteBulkString(message)
 	}
 
-	return len(pubsub.Connections)
+	return len(connections)
 }
