@@ -269,9 +269,10 @@ func RegisterCommands() {
 	})
 
 	RegisterCommand("SUBSCRIBE", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
-		channel := context.StringArg(0)
-
-		pubsub.GetPubSub().Subscribe(protocol, channel)
+		for i := 0; i < len(context.Args); i++ {
+			channel := context.StringArg(i)
+			pubsub.GetPubSub().Subscribe(protocol, channel)
+		}
 	})
 
 	RegisterCommand("PUBLISH", 2, func(protocol *protocol.RESPProtocol, context *CommandContext) {
