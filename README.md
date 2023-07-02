@@ -83,10 +83,6 @@ I will only be implementing the most important commands, as I will not have time
 - [x] UNSUBSCRIBE
 - [x] PSUBSCRIBE
 - [x] PUNSUBSCRIBE
-- [ ] QUIT
-- [ ] RESET
-- [ ] SSUBSCRIBE
-- [ ] SUNSUBSCRIBE
 
 The Lettuce server has been built based on documentation from the following sources:
 
