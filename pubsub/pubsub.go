@@ -7,16 +7,16 @@ import (
 )
 
 type PubSub struct {
-	Subscribers map[string][]*protocol.RESPProtocol
-	Channels    map[*protocol.RESPProtocol][]string
+	Subscribers map[string][]*protocol.Connection
+	Channels    map[*protocol.Connection][]string
 }
 
 var pubsub = createPubSub()
 
 func createPubSub() *PubSub {
 	pubsub := &PubSub{}
-	pubsub.Subscribers = make(map[string][]*protocol.RESPProtocol)
-	pubsub.Channels = make(map[*protocol.RESPProtocol][]string)
+	pubsub.Subscribers = make(map[string][]*protocol.Connection)
+	pubsub.Channels = make(map[*protocol.Connection][]string)
 
 	return pubsub
 }
@@ -25,25 +25,25 @@ func GetPubSub() *PubSub {
 	return pubsub
 }
 
-func (pubsub *PubSub) Subscribe(protocol *protocol.RESPProtocol, channel string) {
-	pubsub.Subscribers[channel] = append(pubsub.Subscribers[channel], protocol)
+func (pubsub *PubSub) Subscribe(connection *protocol.Connection, channel string) {
+	pubsub.Subscribers[channel] = append(pubsub.Subscribers[channel], connection)
 
-	if _, present := pubsub.Channels[protocol]; !present {
-		protocol.CloseListeners = append(protocol.CloseListeners, func() {
-			for _, channel := range pubsub.Channels[protocol] {
-				pubsub.Unsubscribe(protocol, channel)
+	if _, present := pubsub.Channels[connection]; !present {
+		connection.CloseListeners = append(connection.CloseListeners, func() {
+			for _, channel := range pubsub.Channels[connection] {
+				pubsub.Unsubscribe(connection, channel)
 			}
 		})
 	}
 
-	pubsub.Channels[protocol] = append(pubsub.Channels[protocol], channel)
+	pubsub.Channels[connection] = append(pubsub.Channels[connection], channel)
 }
 
-func (pubsub *PubSub) Unsubscribe(protocol *protocol.RESPProtocol, channel string) {
+func (pubsub *PubSub) Unsubscribe(connection *protocol.Connection, channel string) {
 	protocolIndex := -1
 	subscribers := pubsub.Subscribers[channel]
 	for i := range subscribers {
-		if subscribers[i] == protocol {
+		if subscribers[i] == connection {
 			protocolIndex = i
 			break
 		}
@@ -56,7 +56,7 @@ func (pubsub *PubSub) Unsubscribe(protocol *protocol.RESPProtocol, channel strin
 	pubsub.Subscribers[channel] = slices.Delete(pubsub.Subscribers[channel], protocolIndex, protocolIndex+1)
 
 	channelIndex := -1
-	channels := pubsub.Channels[protocol]
+	channels := pubsub.Channels[connection]
 	for i := range channels {
 		if channels[i] == channel {
 			channelIndex = i
@@ -64,10 +64,10 @@ func (pubsub *PubSub) Unsubscribe(protocol *protocol.RESPProtocol, channel strin
 		}
 	}
 
-	pubsub.Channels[protocol] = slices.Delete(pubsub.Channels[protocol], channelIndex, channelIndex+1)
+	pubsub.Channels[connection] = slices.Delete(pubsub.Channels[connection], channelIndex, channelIndex+1)
 }
 
-func (pubsub *PubSub) PSubscribe(protocol *protocol.RESPProtocol, pattern string) {
+func (pubsub *PubSub) PSubscribe(connection *protocol.Connection, pattern string) {
 	glob := glob.NewGlob(pattern)
 	for channel := range pubsub.Subscribers {
 		matches, err := glob.Match(channel)
@@ -75,15 +75,15 @@ func (pubsub *PubSub) PSubscribe(protocol *protocol.RESPProtocol, pattern string
 			continue
 		}
 
-		pubsub.Subscribe(protocol, channel)
+		pubsub.Subscribe(connection, channel)
 		break
 	}
 }
 
-func (pubsub *PubSub) Publish(protocol *protocol.RESPProtocol, channel string, message string) int {
+func (pubsub *PubSub) Publish(connection *protocol.Connection, channel string, message string) int {
 	subscribers := pubsub.Subscribers[channel]
-	for _, protocol := range subscribers {
-		protocol.WriteBulkString(message)
+	for _, connection := range subscribers {
+		connection.WriteBulkString(message)
 	}
 
 	return len(subscribers)

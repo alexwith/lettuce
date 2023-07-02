@@ -34,14 +34,14 @@ func main()  {
 }
 
 func registerCommands()  {
-  command.RegisterCommand("CUSTOMPING", -1, func(protocol *protocol.RESPProtocol, context *command.CommandContext)  {
+  command.RegisterCommand("CUSTOMPING", -1, func(connection *protocol.Connection, context *command.CommandContext)  {
     if len(context.Args) <= 0 {
-      protocol.WriteSimpleString("CUSTOMPONG")
+      connection.WriteSimpleString("CUSTOMPONG")
       return
     }
 
     response := context.StringArg(0)
-    protocol.WriteBulkString(response)
+    connection.WriteBulkString(response)
   })
 }
 ```

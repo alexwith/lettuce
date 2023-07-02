@@ -5,38 +5,38 @@ import (
 	"strconv"
 )
 
-func (protocol *RESPProtocol) GetDataType() (DataStringType, error) {
-	dataType, err := protocol.Reader.ReadByte()
+func (connection *Connection) GetDataType() (DataStringType, error) {
+	dataType, err := connection.Reader.ReadByte()
 
 	return DataStringType(dataType), err
 }
 
-func (protocol *RESPProtocol) ParseDataType() ([]byte, error) {
-	dataType, err := protocol.GetDataType()
+func (connection *Connection) ParseDataType() ([]byte, error) {
+	dataType, err := connection.GetDataType()
 	if err != nil {
 		return []byte{byte(dataType)}, err
 	}
 
 	switch dataType {
 	case SimpleStringType:
-		return []byte(protocol.ParseSimpleString()), nil
+		return []byte(connection.ParseSimpleString()), nil
 	case IntegerType:
-		value, err := protocol.ParseInteger()
+		value, err := connection.ParseInteger()
 		return []byte(strconv.Itoa(value)), err
 	case BulkStringType:
-		value, err := protocol.ParseBulkString()
+		value, err := connection.ParseBulkString()
 		return []byte(value), err
 	default:
 		return nil, errors.New("Failed to parse the data type")
 	}
 }
 
-func (protocol *RESPProtocol) ParseArray() ([][]byte, error) {
-	size := protocol.Reader.ReadInt()
+func (connection *Connection) ParseArray() ([][]byte, error) {
+	size := connection.Reader.ReadInt()
 
 	var array [][]byte
 	for i := 0; i < size; i++ {
-		dataType, err := protocol.ParseDataType()
+		dataType, err := connection.ParseDataType()
 		if err != nil {
 			return array, err
 		}
@@ -47,16 +47,16 @@ func (protocol *RESPProtocol) ParseArray() ([][]byte, error) {
 	return array, nil
 }
 
-func (protocol *RESPProtocol) ParseSimpleString() string {
-	return protocol.Reader.ReadLine()
+func (connection *Connection) ParseSimpleString() string {
+	return connection.Reader.ReadLine()
 }
 
-func (protocol *RESPProtocol) ParseInteger() (int, error) {
-	return strconv.Atoi(protocol.Reader.ReadLine())
+func (connection *Connection) ParseInteger() (int, error) {
+	return strconv.Atoi(connection.Reader.ReadLine())
 }
 
-func (protocol *RESPProtocol) ParseBulkString() (string, error) {
-	length := protocol.Reader.ReadInt()
+func (connection *Connection) ParseBulkString() (string, error) {
+	length := connection.Reader.ReadInt()
 
 	if length > 512*1024*1024 {
 		return "", errors.New("A Bulk String cannot be longer than 512MB")
@@ -64,12 +64,12 @@ func (protocol *RESPProtocol) ParseBulkString() (string, error) {
 
 	var bulkString []byte
 	for i := 0; i < length; i++ {
-		value, _ := protocol.Reader.ReadByte()
+		value, _ := connection.Reader.ReadByte()
 		bulkString = append(bulkString, value)
 	}
 
 	for i := 0; i < 2; i++ {
-		protocol.Reader.ReadByte()
+		connection.Reader.ReadByte()
 	}
 
 	return string(bulkString), nil

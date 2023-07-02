@@ -20,12 +20,12 @@ func Listen(host string, port int16) {
 	fmt.Printf("The lettuce server has started on %s:%d\n", host, port)
 
 	for {
-		connection, err := listener.Accept()
+		tcpConnection, err := listener.Accept()
 		if err != nil {
 			fmt.Println("Failed to accept connection:", err.Error())
 			continue
 		}
 
-		go HandleConnection(connection)
+		go HandleConnection(tcpConnection)
 	}
 }

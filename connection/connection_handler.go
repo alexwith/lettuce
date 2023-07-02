@@ -12,34 +12,34 @@ import (
 	"github.com/alexwith/lettuce/protocol"
 )
 
-func HandleConnection(connection net.Conn) {
-	defer connection.Close()
+func HandleConnection(tcpConnection net.Conn) {
+	defer tcpConnection.Close()
 
-	respProtocol := &protocol.RESPProtocol{
-		Connection: connection,
+	connection := &protocol.Connection{
+		Handle: tcpConnection,
 		Reader: &buffer.BufferReader{
-			Handle: bufio.NewReader(connection),
+			Handle: bufio.NewReader(tcpConnection),
 		},
 	}
 
 	for {
-		dataType, err := respProtocol.GetDataType()
+		dataType, err := connection.GetDataType()
 		if err != nil && err == io.EOF {
-			respProtocol.Close()
+			connection.Close()
 			break
 		}
 
 		switch dataType {
 		case protocol.ArrayType:
-			HandleRespCommand(respProtocol)
+			HandleRespCommand(connection)
 		default:
-			HandleRawCommand(respProtocol)
+			HandleRawCommand(connection)
 		}
 	}
 }
 
-func HandleRespCommand(respProtocol *protocol.RESPProtocol) {
-	commandArgs, err := respProtocol.ParseArray()
+func HandleRespCommand(connection *protocol.Connection) {
+	commandArgs, err := connection.ParseArray()
 	if err != nil {
 		fmt.Println("Failed to parse the incoming redis command:", err.Error())
 	}
@@ -47,11 +47,11 @@ func HandleRespCommand(respProtocol *protocol.RESPProtocol) {
 	redisCommand := string(commandArgs[0])
 	redisCommandArgs := commandArgs[1:]
 
-	HandleCommand(respProtocol, redisCommand, redisCommandArgs)
+	HandleCommand(connection, redisCommand, redisCommandArgs)
 }
 
-func HandleRawCommand(respProtocol *protocol.RESPProtocol) {
-	reader := respProtocol.Reader
+func HandleRawCommand(connection *protocol.Connection) {
+	reader := connection.Reader
 	reader.Handle.UnreadByte() // Undo the check we did for data type
 
 	for !reader.IsEmpty() {
@@ -66,11 +66,11 @@ func HandleRawCommand(respProtocol *protocol.RESPProtocol) {
 			redisCommandArgs[i] = []byte(commandArgs[i+1])
 		}
 
-		HandleCommand(respProtocol, redisCommand, redisCommandArgs)
+		HandleCommand(connection, redisCommand, redisCommandArgs)
 	}
 }
 
-func HandleCommand(respProtocol *protocol.RESPProtocol, redisCommand string, redisCommandArgs [][]byte) {
+func HandleCommand(connection *protocol.Connection, redisCommand string, redisCommandArgs [][]byte) {
 	commandData := command.GetCommand(redisCommand)
 	if commandData == nil {
 		var unknownCommandArgs []string
@@ -80,13 +80,13 @@ func HandleCommand(respProtocol *protocol.RESPProtocol, redisCommand string, red
 		}
 
 		error := fmt.Sprintf("ERR unknown command '%s', with args beginning with: %s", redisCommand, strings.Join(unknownCommandArgs, " "))
-		respProtocol.WriteError(error)
+		connection.WriteError(error)
 		return
 	}
 
 	requiredArgumentsSize := commandData.MinArguments
 	if requiredArgumentsSize != -1 && len(redisCommandArgs) < requiredArgumentsSize {
-		respProtocol.WriteError(fmt.Sprintf("ERR wrong number of arguments for '%s' command", redisCommand))
+		connection.WriteError(fmt.Sprintf("ERR wrong number of arguments for '%s' command", redisCommand))
 		return
 	}
 
@@ -100,5 +100,5 @@ func HandleCommand(respProtocol *protocol.RESPProtocol, redisCommand string, red
 		StringifiedArgs: stringifiedArgs,
 	}
 
-	commandData.Handler(respProtocol, commandContext)
+	commandData.Handler(connection, commandContext)
 }

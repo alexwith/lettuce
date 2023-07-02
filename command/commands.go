@@ -13,7 +13,7 @@ import (
 type CommandData struct {
 	Command      string
 	MinArguments int
-	Handler      func(protocol *protocol.RESPProtocol, context *CommandContext)
+	Handler      func(protocol *protocol.Connection, context *CommandContext)
 }
 
 var commands map[string]*CommandData = make(map[string]*CommandData)
@@ -22,7 +22,7 @@ func GetCommand(command string) *CommandData {
 	return commands[strings.ToUpper(command)]
 }
 
-func RegisterCommand(command string, minArguments int, handler func(protocol *protocol.RESPProtocol, context *CommandContext)) {
+func RegisterCommand(command string, minArguments int, handler func(connection *protocol.Connection, context *CommandContext)) {
 	commands[command] = &CommandData{
 		Command:      command,
 		MinArguments: minArguments,
@@ -31,17 +31,17 @@ func RegisterCommand(command string, minArguments int, handler func(protocol *pr
 }
 
 func RegisterCommands() {
-	RegisterCommand("PING", -1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("PING", -1, func(connection *protocol.Connection, context *CommandContext) {
 		if len(context.Args) <= 0 {
-			protocol.WriteSimpleString("PONG")
+			connection.WriteSimpleString("PONG")
 			return
 		}
 
 		response := context.StringArg(0)
-		protocol.WriteBulkString(response)
+		connection.WriteBulkString(response)
 	})
 
-	RegisterCommand("SET", 2, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("SET", 2, func(connection *protocol.Connection, context *CommandContext) {
 		key := context.StringArg(0)
 		value := context.Args[1]
 
@@ -56,12 +56,12 @@ func RegisterCommands() {
 
 		oldValue, oldPresent := storage.Get(key)
 		if nx && oldPresent {
-			protocol.WriteNullBulkString()
+			connection.WriteNullBulkString()
 			return
 		}
 
 		if xx && !oldPresent {
-			protocol.WriteNullBulkString()
+			connection.WriteNullBulkString()
 			return
 		}
 
@@ -85,41 +85,41 @@ func RegisterCommands() {
 
 		if get {
 			if oldPresent {
-				protocol.WriteBulkString(string(oldValue))
+				connection.WriteBulkString(string(oldValue))
 			} else {
-				protocol.WriteNullBulkString()
+				connection.WriteNullBulkString()
 			}
 
 			return
 		}
 
-		protocol.WriteSimpleString("OK")
+		connection.WriteSimpleString("OK")
 	})
 
-	RegisterCommand("GET", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("GET", 1, func(connection *protocol.Connection, context *CommandContext) {
 		key := context.StringArg(0)
 
 		value, present := storage.Get(key)
 		if !present {
-			protocol.WriteNullBulkString()
+			connection.WriteNullBulkString()
 			return
 		}
 
-		protocol.WriteBulkString(string(value))
+		connection.WriteBulkString(string(value))
 	})
 
-	RegisterCommand("INCR", 2, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("INCR", 2, func(connection *protocol.Connection, context *CommandContext) {
 		key := context.StringArg(0)
 		value, err := storage.Increment(key)
 		if err != nil {
-			protocol.WriteError("ERR value is not an integer or out of range")
+			connection.WriteError("ERR value is not an integer or out of range")
 			return
 		}
 
-		protocol.WriteInteger(value)
+		connection.WriteInteger(value)
 	})
 
-	RegisterCommand("DEL", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("DEL", 1, func(connection *protocol.Connection, context *CommandContext) {
 		var amount int
 		for _, key := range context.Args {
 			success := storage.Delete(string(key))
@@ -130,10 +130,10 @@ func RegisterCommands() {
 			amount++
 		}
 
-		protocol.WriteInteger(amount)
+		connection.WriteInteger(amount)
 	})
 
-	RegisterCommand("EXISTS", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("EXISTS", 1, func(connection *protocol.Connection, context *CommandContext) {
 		var amount int
 		for _, key := range context.Args {
 			_, present := storage.Get(string(key))
@@ -144,10 +144,10 @@ func RegisterCommands() {
 			amount++
 		}
 
-		protocol.WriteInteger(amount)
+		connection.WriteInteger(amount)
 	})
 
-	RegisterCommand("STRLEN", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("STRLEN", 1, func(connection *protocol.Connection, context *CommandContext) {
 		key := context.StringArg(0)
 
 		var length int
@@ -159,15 +159,15 @@ func RegisterCommands() {
 			length = len(value)
 		}
 
-		protocol.WriteInteger(length)
+		connection.WriteInteger(length)
 	})
 
-	RegisterCommand("EXPIRE", 2, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("EXPIRE", 2, func(connection *protocol.Connection, context *CommandContext) {
 		key := context.StringArg(0)
 		seconds := context.IntegerArg(1)
 
 		failed := func() {
-			protocol.WriteInteger(0)
+			connection.WriteInteger(0)
 		}
 
 		nx := context.HasOption("NX")
@@ -205,10 +205,10 @@ func RegisterCommands() {
 		}
 
 		storage.Expire(key, timeout)
-		protocol.WriteInteger(1)
+		connection.WriteInteger(1)
 	})
 
-	RegisterCommand("PERSIST", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("PERSIST", 1, func(connection *protocol.Connection, context *CommandContext) {
 		key := context.StringArg(0)
 
 		success := storage.Persist(key)
@@ -218,39 +218,39 @@ func RegisterCommands() {
 			status = 1
 		}
 
-		protocol.WriteInteger(status)
+		connection.WriteInteger(status)
 	})
 
-	RegisterCommand("TTL", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("TTL", 1, func(connection *protocol.Connection, context *CommandContext) {
 		key := context.StringArg(0)
 
 		_, keyPresent := storage.Get(key)
 		if !keyPresent {
-			protocol.WriteInteger(-2)
+			connection.WriteInteger(-2)
 			return
 		}
 
 		timeout, timeoutPresent := storage.GetTimeout(key)
 		if !timeoutPresent {
-			protocol.WriteInteger(-1)
+			connection.WriteInteger(-1)
 			return
 		}
 
 		remainingTime := int(timeout-time.Now().UnixMilli()) / 1000
 
-		protocol.WriteInteger(remainingTime)
+		connection.WriteInteger(remainingTime)
 	})
 
-	RegisterCommand("APPEND", 2, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("APPEND", 2, func(connection *protocol.Connection, context *CommandContext) {
 		key := context.StringArg(0)
 		value := context.StringArg(1)
 
 		length := storage.Append(key, value)
 
-		protocol.WriteInteger(length)
+		connection.WriteInteger(length)
 	})
 
-	RegisterCommand("KEYS", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("KEYS", 1, func(connection *protocol.Connection, context *CommandContext) {
 		pattern := context.StringArg(0)
 
 		glob := glob.NewGlob(pattern)
@@ -265,35 +265,35 @@ func RegisterCommands() {
 			keys = append(keys, key)
 		}
 
-		protocol.WriteArray(keys)
+		connection.WriteArray(keys)
 	})
 
-	RegisterCommand("SUBSCRIBE", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("SUBSCRIBE", 1, func(connection *protocol.Connection, context *CommandContext) {
 		for i := 0; i < len(context.Args); i++ {
 			channel := context.StringArg(i)
-			pubsub.GetPubSub().Subscribe(protocol, channel)
+			pubsub.GetPubSub().Subscribe(connection, channel)
 		}
 	})
 
-	RegisterCommand("UNSUBSCRIBE", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("UNSUBSCRIBE", 1, func(connection *protocol.Connection, context *CommandContext) {
 		for i := 0; i < len(context.Args); i++ {
 			channel := context.StringArg(i)
-			pubsub.GetPubSub().Unsubscribe(protocol, channel)
+			pubsub.GetPubSub().Unsubscribe(connection, channel)
 		}
 	})
 
-	RegisterCommand("PUBLISH", 2, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("PUBLISH", 2, func(connection *protocol.Connection, context *CommandContext) {
 		channel := context.StringArg(0)
 		message := context.StringArg(1)
 
-		clients := pubsub.GetPubSub().Publish(protocol, channel, message)
-		protocol.WriteInteger(clients)
+		clients := pubsub.GetPubSub().Publish(connection, channel, message)
+		connection.WriteInteger(clients)
 	})
 
-	RegisterCommand("PSUBSCRIBE", 1, func(protocol *protocol.RESPProtocol, context *CommandContext) {
+	RegisterCommand("PSUBSCRIBE", 1, func(connection *protocol.Connection, context *CommandContext) {
 		for i := 0; i < len(context.Args); i++ {
 			pattern := context.StringArg(i)
-			pubsub.GetPubSub().PSubscribe(protocol, pattern)
+			pubsub.GetPubSub().PSubscribe(connection, pattern)
 		}
 	})
 }
