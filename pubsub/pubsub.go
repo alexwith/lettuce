@@ -1,6 +1,8 @@
 package pubsub
 
 import (
+	"errors"
+
 	"github.com/alexwith/lettuce/protocol"
 	glob "github.com/ganbarodigital/go_glob"
 	"golang.org/x/exp/slices"
@@ -67,19 +69,6 @@ func (pubsub *PubSub) Unsubscribe(connection *protocol.Connection, channel strin
 	pubsub.Channels[connection] = slices.Delete(pubsub.Channels[connection], channelIndex, channelIndex+1)
 }
 
-func (pubsub *PubSub) PSubscribe(connection *protocol.Connection, pattern string) {
-	glob := glob.NewGlob(pattern)
-	for channel := range pubsub.Subscribers {
-		matches, err := glob.Match(channel)
-		if err != nil || !matches {
-			continue
-		}
-
-		pubsub.Subscribe(connection, channel)
-		break
-	}
-}
-
 func (pubsub *PubSub) Publish(connection *protocol.Connection, channel string, message string) int {
 	subscribers := pubsub.Subscribers[channel]
 	for _, connection := range subscribers {
@@ -87,4 +76,18 @@ func (pubsub *PubSub) Publish(connection *protocol.Connection, channel string, m
 	}
 
 	return len(subscribers)
+}
+
+func (pubsub *PubSub) FindChannelByGlob(pattern string) (string, error) {
+	glob := glob.NewGlob(pattern)
+	for channel := range pubsub.Subscribers {
+		matches, err := glob.Match(channel)
+		if err != nil || !matches {
+			continue
+		}
+
+		return channel, nil
+	}
+
+	return "", errors.New("No channel found")
 }

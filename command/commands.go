@@ -291,9 +291,30 @@ func RegisterCommands() {
 	})
 
 	RegisterCommand("PSUBSCRIBE", 1, func(connection *protocol.Connection, context *CommandContext) {
+		pubsub := pubsub.GetPubSub()
+
 		for i := 0; i < len(context.Args); i++ {
 			pattern := context.StringArg(i)
-			pubsub.GetPubSub().PSubscribe(connection, pattern)
+			channel, err := pubsub.FindChannelByGlob(pattern)
+			if err != nil {
+				continue
+			}
+
+			pubsub.Subscribe(connection, channel)
+		}
+	})
+
+	RegisterCommand("PUNSUBSCRIBE", 1, func(connection *protocol.Connection, context *CommandContext) {
+		pubsub := pubsub.GetPubSub()
+
+		for i := 0; i < len(context.Args); i++ {
+			pattern := context.StringArg(i)
+			channel, err := pubsub.FindChannelByGlob(pattern)
+			if err != nil {
+				continue
+			}
+
+			pubsub.Unsubscribe(connection, channel)
 		}
 	})
 }

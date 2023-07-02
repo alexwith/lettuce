@@ -82,7 +82,7 @@ I will only be implementing the most important commands, as I will not have time
 - [x] SUBSCRIBE
 - [x] UNSUBSCRIBE
 - [x] PSUBSCRIBE
-- [ ] PUNSUBSCRIBE
+- [x] PUNSUBSCRIBE
 - [ ] QUIT
 - [ ] RESET
 - [ ] SSUBSCRIBE
